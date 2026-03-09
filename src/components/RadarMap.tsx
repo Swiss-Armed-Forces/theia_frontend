@@ -15,10 +15,14 @@ export default function RadarMap({
 }) {
   const mapRef = useRef(null as Map | null);
 
-  const monostaticRadarMarkers = blueMonostaticRadars.map((radar) => (
-    <MonostaticRadarMarker radar={radar} onClick={function (): void {
-      throw new Error("Function not implemented.");
-    } } />
+  const monostaticRadarMarkers = blueMonostaticRadars.map((radar, i) => (
+    <MonostaticRadarMarker
+      key={i}
+      radar={radar}
+      onClick={function (): void {
+        throw new Error("Function not implemented.");
+      }}
+    />
   ));
 
   const map = (
