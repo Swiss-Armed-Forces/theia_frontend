@@ -89,7 +89,7 @@ export interface components {
         /** ExtrapolatedTrack */
         ExtrapolatedTrack: {
             /** Id */
-            id: number;
+            id: string;
             /** Points */
             points: components["schemas"]["TrackPoint"][];
         };
