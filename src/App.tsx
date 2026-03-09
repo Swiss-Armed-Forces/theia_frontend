@@ -2,11 +2,15 @@ import RadarMap from "./components/RadarMap";
 import useRadarData from "./hooks/useRadarData";
 
 function App() {
-  const { time, blueSituationalPicture } = useRadarData();
+  const { time, blueSituationalPicture, redGroundTruth } = useRadarData();
 
   return (
     <>
-      <RadarMap time={time} blueMonostaticRadars={blueSituationalPicture.friendly_radars} />
+      <RadarMap
+        time={time}
+        blueMonostaticRadars={blueSituationalPicture.friendly_radars}
+        redTargetGroundTruths={redGroundTruth}
+      />
     </>
   );
 }

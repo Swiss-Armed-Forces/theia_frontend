@@ -1,17 +1,20 @@
 import { MapContainer, TileLayer } from "react-leaflet";
 import { Map } from "leaflet";
-import type { Radar } from "../hooks/useRadarData";
+import type { GroundTruth, Radar } from "../hooks/useRadarData";
 import "leaflet/dist/leaflet.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { useRef } from "react";
 import MonostaticRadarMarker from "./RadarMarker";
+import GroundTruthLayer from "./GroundTruthLayer";
 
 export default function RadarMap({
   time,
   blueMonostaticRadars,
+  redTargetGroundTruths,
 }: {
   time: Date;
   blueMonostaticRadars: Radar[];
+  redTargetGroundTruths: GroundTruth[];
 }) {
   const mapRef = useRef(null as Map | null);
 
@@ -23,6 +26,9 @@ export default function RadarMap({
         throw new Error("Function not implemented.");
       }}
     />
+  ));
+  const groundTruthLayers = redTargetGroundTruths.map((gt, i) => (
+    <GroundTruthLayer key={i} groundTruth={gt} isBlue={false} />
   ));
 
   const map = (
@@ -42,8 +48,9 @@ export default function RadarMap({
         subdomains={["a", "b", "c"]}
       />
       {monostaticRadarMarkers}
+      {groundTruthLayers}
     </MapContainer>
   );
-  console.log(time.toISOString(), JSON.stringify(blueMonostaticRadars));
+  console.log(time.toISOString());
   return <div style={{ width: "80vw", height: "80vh" }}>{map}</div>;
 }
