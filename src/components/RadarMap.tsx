@@ -1,6 +1,6 @@
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
 import { Map } from "leaflet";
-import type { GroundTruth, Radar } from "../hooks/useRadarData";
+import type { GeoJSONFeature, GroundTruth, Radar } from "../hooks/useRadarData";
 import "leaflet/dist/leaflet.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { useRef } from "react";
@@ -10,10 +10,12 @@ import GroundTruthLayer from "./GroundTruthLayer";
 export default function RadarMap({
   time,
   blueMonostaticRadars,
+  blueMonostaticCoverages,
   redTargetGroundTruths,
 }: {
   time: Date;
   blueMonostaticRadars: Radar[];
+  blueMonostaticCoverages: GeoJSONFeature[];
   redTargetGroundTruths: GroundTruth[];
 }) {
   const mapRef = useRef(null as Map | null);
@@ -29,6 +31,9 @@ export default function RadarMap({
   ));
   const groundTruthLayers = redTargetGroundTruths.map((gt, i) => (
     <GroundTruthLayer key={i} groundTruth={gt} isBlue={false} />
+  ));
+  const coverageLayers = blueMonostaticCoverages.map((coverage, i) => (
+    <GeoJSON key={i} data={coverage} interactive={false} />
   ));
 
   const map = (
@@ -47,6 +52,7 @@ export default function RadarMap({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         subdomains={["a", "b", "c"]}
       />
+      {coverageLayers}
       {monostaticRadarMarkers}
       {groundTruthLayers}
     </MapContainer>

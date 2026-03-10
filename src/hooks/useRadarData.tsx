@@ -1,10 +1,14 @@
+import { useEffect, useState } from "react";
 import type { components } from "./schema";
+import type { Feature, Polygon } from "geojson";
+export type GeoJSONPolygon = Polygon;
+export type GeoJSONFeature = Feature<Polygon>;
 // import createFetchClient from "openapi-fetch";
 // import createClient from "openapi-react-query";
 
 export type SituationalPicture =
   components["schemas"]["ExtrapolatedSituationalPicture"];
-export type Radar = components["schemas"]["Radar"];
+export type Radar = components["schemas"]["Radar-Input"];
 export type Point = components["schemas"]["Point"];
 export type Track = components["schemas"]["ExtrapolatedTrack"];
 export type GroundTruth = components["schemas"]["ExtrapolatedGroundtruth"];
@@ -14,26 +18,10 @@ export type GroundTruth = components["schemas"]["ExtrapolatedGroundtruth"];
 // });
 // export const backendApi = createClient(fetchClient);
 
+const BASE_URL = "http://localhost:8000";
+
 export default function useRadarData() {
-  // TODO: Implement properly.
-  //   const {
-  //     data: time,
-  //     error: timeError,
-  //   } = backendApi.useQuery(
-  //     "get",
-  //     "/time",
-  //     { refetchInterval: Infinity, placeholderData: (prev: Date) => prev },
-  //   );
-
-  //   if (timeError) {
-  //     throw new Error("Could not load simulation time");
-  //   }
-
-  //   backendApi.useQuery(
-  //     "post",
-  //     "/time",
-  //     { refetchInterval: Infinity, placeholderData: (prev: Date) => prev },
-  //   )
+  const [blueCoverages, setBlueCoverages] = useState([] as GeoJSONFeature[]);
 
   const time = new Date("2022-06-27T23:00:50");
   const blueSituationalPicture: SituationalPicture = {
@@ -2490,6 +2478,45 @@ export default function useRadarData() {
       ],
     },
   ];
+  useEffect(() => {
+    Promise.all(
+      blueSituationalPicture.friendly_radars.map((radar) =>
+        calculateMonostaticCoverage(radar, 10000, 2),
+      ),
+    ).then((coverages) => {
+      setBlueCoverages(coverages);
+    });
+  }, []);
+  return { time, blueSituationalPicture, redGroundTruth, blueCoverages };
+}
 
-  return { time, blueSituationalPicture, redGroundTruth };
+async function calculateMonostaticCoverage(
+  radar: Radar,
+  target_alt: number,
+  rcs: number,
+  probability_threshold: number = 0.8,
+  azimuth_resolution_degree: number = 2.0,
+): Promise<GeoJSONFeature> {
+  const query = new URLSearchParams({
+    target_alt: String(target_alt),
+    rcs: String(rcs),
+    probability_threshold: String(probability_threshold),
+    azimuth_resolution_degree: String(azimuth_resolution_degree),
+  });
+  const res = await fetch(
+    `${BASE_URL}/calculate_monostatic_coverage?${query}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(radar),
+    },
+  );
+  if (!res.ok) {
+    const error = await res.json();
+    console.error("Validation error:", JSON.stringify(error, null, 2));
+    throw new Error(
+      `POST /calculate_monostatic_coverage failed: ${res.status}`,
+    );
+  }
+  return res.json();
 }

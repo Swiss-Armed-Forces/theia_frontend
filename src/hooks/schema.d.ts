@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/calculate_monostatic_coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Calculate Monostatic Coverage */
+        post: operations["calculate_monostatic_coverage_calculate_monostatic_coverage_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -82,7 +99,7 @@ export interface components {
              */
             time: string;
             /** Friendly Radars */
-            friendly_radars: components["schemas"]["Radar"][];
+            friendly_radars: components["schemas"]["Radar-Output"][];
             /** Enemy Tracks */
             enemy_tracks: components["schemas"]["ExtrapolatedTrack"][];
         };
@@ -92,6 +109,32 @@ export interface components {
             id: string;
             /** Points */
             points: components["schemas"]["TrackPoint"][];
+        };
+        /** GeoJSONFeature */
+        GeoJSONFeature: {
+            /**
+             * Type
+             * @default Feature
+             */
+            type: string;
+            geometry: components["schemas"]["GeoJSONPolygon"];
+            /**
+             * Properties
+             * @default {}
+             */
+            properties: {
+                [key: string]: unknown;
+            };
+        };
+        /** GeoJSONPolygon */
+        GeoJSONPolygon: {
+            /**
+             * Type
+             * @default Polygon
+             */
+            type: string;
+            /** Coordinates */
+            coordinates: number[][][];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -113,12 +156,66 @@ export interface components {
          */
         Polarization: 0 | 1;
         /** Radar */
-        Radar: {
-            transmitter: components["schemas"]["Transmitter"];
-            receiver: components["schemas"]["Receiver"];
+        "Radar-Input": {
+            transmitter: components["schemas"]["Transmitter-Input"];
+            receiver: components["schemas"]["Receiver-Input"];
+        };
+        /** Radar */
+        "Radar-Output": {
+            transmitter: components["schemas"]["Transmitter-Output"];
+            receiver: components["schemas"]["Receiver-Output"];
         };
         /** Receiver */
-        Receiver: {
+        "Receiver-Input": {
+            /** Id */
+            id: number;
+            point: components["schemas"]["Point"];
+            /** Antenna Height */
+            antenna_height: number;
+            /** Diameter */
+            diameter: number;
+            /** Cpi Pulses */
+            cpi_pulses: number;
+            /** Pfa */
+            pfa: number;
+            /** Min Elevation */
+            min_elevation: number;
+            /** Max Elevation */
+            max_elevation: number;
+            /** Rotation Time */
+            rotation_time: number;
+            /** Bandwidth */
+            bandwidth: number;
+            /**
+             * Gain
+             * @default 0
+             */
+            gain: number;
+            /**
+             * Losses
+             * @default 0
+             */
+            losses: number;
+            /**
+             * Noise Temperature
+             * @default 300
+             */
+            noise_temperature: number;
+            /**
+             * Noise Figure
+             * @default 1.9
+             */
+            noise_figure: number;
+            /**
+             * Antenna Efficiency Value
+             * @default 0.6
+             */
+            antenna_efficiency_value: number;
+            vertical_attenuation?: components["schemas"]["AttenuationModel"] | null;
+            horizontal_attenuation?: components["schemas"]["AttenuationModel"] | null;
+        };
+        /** Receiver */
+        "Receiver-Output": {
             /** Id */
             id: number;
             point: components["schemas"]["Point"];
@@ -192,7 +289,40 @@ export interface components {
             v_up: number;
         };
         /** Transmitter */
-        Transmitter: {
+        "Transmitter-Input": {
+            /** Id */
+            id: number;
+            point: components["schemas"]["Point"];
+            /** Power */
+            power: number;
+            /** Erp */
+            erp: number;
+            /** Antenna Height */
+            antenna_height: number;
+            /** Antenna Diameter */
+            antenna_diameter: number;
+            /** Frequency */
+            frequency: number;
+            /** Pulse Width */
+            pulse_width: number;
+            polarization: components["schemas"]["Polarization"];
+            /** Bandwidth */
+            bandwidth: number;
+            /**
+             * Max Coherent Integration Time
+             * @default 0.5
+             */
+            max_coherent_integration_time: number;
+            /**
+             * Antenna Efficiency Value
+             * @default 0.6
+             */
+            antenna_efficiency_value: number;
+            vertical_attenuation?: components["schemas"]["AttenuationModel"] | null;
+            horizontal_attenuation?: components["schemas"]["AttenuationModel"] | null;
+        };
+        /** Transmitter */
+        "Transmitter-Output": {
             /** Id */
             id: number;
             point: components["schemas"]["Point"];
@@ -319,6 +449,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExtrapolatedGroundtruth"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    calculate_monostatic_coverage_calculate_monostatic_coverage_post: {
+        parameters: {
+            query: {
+                target_alt: number;
+                rcs: number;
+                probability_threshold: number;
+                azimuth_resolution_degree: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Radar-Input"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeoJSONFeature"];
                 };
             };
             /** @description Validation Error */
