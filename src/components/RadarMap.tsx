@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { useRef } from "react";
 import MonostaticRadarMarker from "./RadarMarker";
-import GroundTruthLayer from "./GroundTruthLayer";
+import TrajectoryLayer from "./TrajectoryLayer";
 
 export default function RadarMap({
   time,
@@ -30,7 +30,12 @@ export default function RadarMap({
     />
   ));
   const groundTruthLayers = redTargetGroundTruths.map((gt, i) => (
-    <GroundTruthLayer key={i} groundTruth={gt} currentTime={time} isBlue={false} />
+    <TrajectoryLayer
+      key={i}
+      trajectory={gt}
+      currentTime={time}
+      isBlue={false}
+    />
   ));
   const coverageLayers = blueMonostaticCoverages.map((coverage, i) => (
     <GeoJSON key={i} data={coverage} interactive={false} />

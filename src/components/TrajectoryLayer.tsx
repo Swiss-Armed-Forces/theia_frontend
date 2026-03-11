@@ -1,22 +1,22 @@
 import { CircleMarker, Polyline, Tooltip } from "react-leaflet";
-import type { GroundTruth } from "../hooks/useRadarData";
+import type { GroundTruth, Track } from "../hooks/useRadarData";
 
-export default function GroundTruthLayer({
-  groundTruth,
+export default function TrajectoryLayer({
+  trajectory,
   currentTime,
   isBlue,
 }: {
-  groundTruth: GroundTruth;
+  trajectory: GroundTruth | Track;
   currentTime: Date;
   isBlue: boolean;
 }) {
-  const pastPoints = groundTruth.points.filter(
+  const pastPoints = trajectory.points.filter(
     (point) => new Date(point.time) <= currentTime,
   );
   const futurePoints = [pastPoints[pastPoints.length - 1]].concat(
-    groundTruth.points.filter((point) => new Date(point.time) > currentTime),
+    trajectory.points.filter((point) => new Date(point.time) > currentTime),
   );
-  const currentPoint = groundTruth.points.reduce((closest, point) => {
+  const currentPoint = trajectory.points.reduce((closest, point) => {
     const currentDiff = Math.abs(
       new Date(point.time).getTime() - currentTime.getTime(),
     );
@@ -25,15 +25,21 @@ export default function GroundTruthLayer({
     );
     return currentDiff < closestDiff ? point : closest;
   });
+  const id = "target_id" in trajectory ? trajectory.target_id : trajectory.id;
+  const tooltip = (
+    <Tooltip>
+      <div>
+        {"target_id" in trajectory ? `Target ID: ${id}` : `Track ID: ${id}`}
+      </div>
+    </Tooltip>
+  );
   return (
     <>
       <Polyline
         color={isBlue ? "blue" : "red"}
         positions={pastPoints.map((p) => [p.lat, p.lon])}
       >
-        <Tooltip>
-          <div>Target ID: {groundTruth.target_id}</div>
-        </Tooltip>
+        {tooltip}
       </Polyline>
       <CircleMarker
         center={[currentPoint.lat, currentPoint.lon]}
@@ -47,9 +53,7 @@ export default function GroundTruthLayer({
         positions={futurePoints.map((p) => [p.lat, p.lon])}
         pathOptions={{ dashArray: "10, 10" }}
       >
-        <Tooltip>
-          <div>Target ID: {groundTruth.target_id}</div>
-        </Tooltip>
+        {tooltip}
       </Polyline>
     </>
   );
