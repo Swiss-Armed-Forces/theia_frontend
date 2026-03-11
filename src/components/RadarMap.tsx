@@ -30,7 +30,7 @@ export default function RadarMap({
     />
   ));
   const groundTruthLayers = redTargetGroundTruths.map((gt, i) => (
-    <GroundTruthLayer key={i} groundTruth={gt} isBlue={false} />
+    <GroundTruthLayer key={i} groundTruth={gt} currentTime={time} isBlue={false} />
   ));
   const coverageLayers = blueMonostaticCoverages.map((coverage, i) => (
     <GeoJSON key={i} data={coverage} interactive={false} />

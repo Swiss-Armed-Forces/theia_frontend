@@ -23,7 +23,7 @@ const BASE_URL = "http://localhost:8000";
 export default function useRadarData() {
   const [blueCoverages, setBlueCoverages] = useState([] as GeoJSONFeature[]);
 
-  const time = new Date("2022-06-27T23:00:50");
+  const time = new Date("2022-06-27T23:01:40");
   const blueSituationalPicture: SituationalPicture = {
     time: "2022-06-27T23:02:09",
     friendly_radars: [
