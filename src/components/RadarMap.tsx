@@ -1,22 +1,29 @@
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
 import { Map } from "leaflet";
-import type { GeoJSONFeature, GroundTruth, Radar } from "../hooks/useRadarData";
+import type {
+  GeoJSONFeature,
+  GroundTruth,
+  Radar,
+  Track,
+} from "../hooks/useRadarData";
 import "leaflet/dist/leaflet.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { useRef } from "react";
 import MonostaticRadarMarker from "./RadarMarker";
 import TrajectoryLayer from "./TrajectoryLayer";
+import ClickPopup from "./ClickPopup";
 
 export default function RadarMap({
   time,
   blueMonostaticRadars,
   blueMonostaticCoverages,
-  redTargetGroundTruths,
+  redTrajectories,
 }: {
   time: Date;
   blueMonostaticRadars: Radar[];
   blueMonostaticCoverages: GeoJSONFeature[];
   redTargetGroundTruths: GroundTruth[];
+  redTrajectories: GroundTruth[] | Track[];
 }) {
   const mapRef = useRef(null as Map | null);
 
@@ -29,7 +36,7 @@ export default function RadarMap({
       }}
     />
   ));
-  const groundTruthLayers = redTargetGroundTruths.map((gt, i) => (
+  const groundTruthLayers = redTrajectories.map((gt, i) => (
     <TrajectoryLayer
       key={i}
       trajectory={gt}
@@ -60,8 +67,8 @@ export default function RadarMap({
       {coverageLayers}
       {monostaticRadarMarkers}
       {groundTruthLayers}
+      <ClickPopup />
     </MapContainer>
   );
-  console.log(time.toISOString());
   return <div style={{ width: "80vw", height: "80vh" }}>{map}</div>;
 }

@@ -10,6 +10,9 @@ export default function TrajectoryLayer({
   currentTime: Date;
   isBlue: boolean;
 }) {
+  if (trajectory.points.length == 0) {
+    return <div></div>;
+  }
   const pastPoints = trajectory.points.filter(
     (point) => new Date(point.time) <= currentTime,
   );
