@@ -42,6 +42,7 @@ function generateTimeWindow(
 
 export default function useRadarData(extrapolate: boolean) {
   const [time, setTime] = useState(new Date("2022-06-27T23:01:40"));
+  const [isPaused, setIsPaused] = useState(true);
   const [redGroundTruth, setRedGroundTruth] = useState([
     DEFAULT_GROUND_TRUTH,
   ] as GroundTruth[]);
@@ -72,12 +73,17 @@ export default function useRadarData(extrapolate: boolean) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      fetchSimulationTime().then((time) => {
-        setTime(time);
+      if (!isPaused) {
+        fetchSimulationTime().then((time) => {
+          setTime(time);
+        });
+      }
+      fetchIsPaused().then((isPausedNew) => {
+        setIsPaused(isPausedNew);
       });
     }, refreshPeriodSeconds * 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isPaused]);
 
   useEffect(() => {
     const times = generateTimeWindow(time, secondsInPast, secondsInFuture);
@@ -89,7 +95,14 @@ export default function useRadarData(extrapolate: boolean) {
     );
   }, [time, secondsInFuture]);
 
-  return { time, blueSituationalPicture, redGroundTruth, blueCoverages };
+  return {
+    time,
+    blueSituationalPicture,
+    redGroundTruth,
+    blueCoverages,
+    isPaused,
+    setIsPaused: postIsPaused,
+  };
 }
 
 async function fetchSituationalPicture(
@@ -124,6 +137,35 @@ async function fetchSimulationTime(): Promise<Date> {
   }
   const data: string = await response.json();
   return new Date(data);
+}
+
+async function fetchIsPaused(): Promise<boolean> {
+  const response = await fetch(`${BASE_URL}/is_paused`);
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("Validation error:", JSON.stringify(error, null, 2));
+    throw new Error(`GET /is_paused failed: ${response.status}`);
+  }
+  const data: string = await response.json();
+  return Boolean(data);
+}
+
+async function postIsPaused(isPaused: boolean) {
+  if (isPaused) {
+    const response = await fetch(`${BASE_URL}/pause`, { method: "POST" });
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Validation error:", JSON.stringify(error, null, 2));
+      throw new Error(`POST /pause failed: ${response.status}`);
+    }
+  } else {
+    const response = await fetch(`${BASE_URL}/resume`, { method: "POST" });
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Validation error:", JSON.stringify(error, null, 2));
+      throw new Error(`POST /resume failed: ${response.status}`);
+    }
+  }
 }
 
 async function fetchGroundTruth(

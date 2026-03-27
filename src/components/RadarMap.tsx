@@ -7,7 +7,6 @@ import type {
   Track,
 } from "../hooks/useRadarData";
 import "leaflet/dist/leaflet.css";
-import "@fortawesome/fontawesome-free/css/all.min.css";
 import { useRef } from "react";
 import MonostaticRadarMarker from "./RadarMarker";
 import TrajectoryLayer from "./TrajectoryLayer";
