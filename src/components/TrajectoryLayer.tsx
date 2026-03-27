@@ -10,15 +10,9 @@ export default function TrajectoryLayer({
   currentTime: Date;
   isBlue: boolean;
 }) {
-  if (trajectory.points.length == 0) {
+  if (trajectory.points.length < 2) {
     return <div></div>;
   }
-  const pastPoints = trajectory.points.filter(
-    (point) => new Date(point.time) <= currentTime,
-  );
-  const futurePoints = [pastPoints[pastPoints.length - 1]].concat(
-    trajectory.points.filter((point) => new Date(point.time) > currentTime),
-  );
   const currentPoint = trajectory.points.reduce((closest, point) => {
     const currentDiff = Math.abs(
       new Date(point.time).getTime() - currentTime.getTime(),
@@ -28,6 +22,15 @@ export default function TrajectoryLayer({
     );
     return currentDiff < closestDiff ? point : closest;
   });
+  const pastPoints = trajectory.points.filter(
+    (point) => new Date(point.time) <= currentTime,
+  );
+  const firstFuturePoint =
+    pastPoints.length > 0 ? [pastPoints[pastPoints.length - 1]] : [];
+  const futurePoints = firstFuturePoint.concat(
+    trajectory.points.filter((point) => new Date(point.time) > currentTime),
+  );
+
   const id = "target_id" in trajectory ? trajectory.target_id : trajectory.id;
   const tooltip = (
     <Tooltip>

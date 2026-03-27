@@ -36,10 +36,10 @@ export default function RadarMap({
       }}
     />
   ));
-  const groundTruthLayers = redTrajectories.map((gt, i) => (
+  const groundTruthLayers = redTrajectories.map((trajectory) => (
     <TrajectoryLayer
-      key={i}
-      trajectory={gt}
+      key={"id" in trajectory ? parseInt(trajectory.id) : trajectory.target_id}
+      trajectory={trajectory}
       currentTime={time}
       isBlue={false}
     />
