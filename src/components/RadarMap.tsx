@@ -21,7 +21,6 @@ export default function RadarMap({
   time: Date;
   blueMonostaticRadars: Radar[];
   blueMonostaticCoverages: GeoJSONFeature[];
-  redTargetGroundTruths: GroundTruth[];
   redTrajectories: GroundTruth[] | Track[];
 }) {
   const mapRef = useRef(null as Map | null);

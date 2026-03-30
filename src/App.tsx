@@ -1,9 +1,7 @@
 import { useState } from "react";
-import RadarMap from "./components/RadarMap";
 import useRadarData from "./hooks/useRadarData";
-import PlaybackControls from "./components/PlaybackControls";
 import { defaultSettings } from "./contexts/SettingsContext";
-import SettingsForm from "./components/SettingsForm";
+import Gui from "./components/Gui";
 
 function App() {
   const [settings, setSettings] = useState(defaultSettings);
@@ -19,18 +17,15 @@ function App() {
 
   return (
     <>
-      <div style={{}}>
-        Time: {time.toISOString()}{" "}
-        <SettingsForm settings={settings} setSettings={setSettings} />
-        <PlaybackControls isPaused={isPaused} setIsPaused={setIsPaused} />
-      </div>
-      
-      <RadarMap
+      <Gui
         time={time}
-        blueMonostaticRadars={blueSituationalPicture.friendly_radars}
-        blueMonostaticCoverages={blueCoverages}
-        redTargetGroundTruths={redGroundTruth}
-        redTrajectories={
+        isPaused={isPaused}
+        setIsPaused={setIsPaused}
+        settings={settings}
+        setSettings={setSettings}
+        friendlyRadars={blueSituationalPicture.friendly_radars}
+        friendlyCoverages={blueCoverages}
+        enemyTrajectories={
           settings.displayGroundTruth
             ? redGroundTruth
             : blueSituationalPicture.enemy_tracks
