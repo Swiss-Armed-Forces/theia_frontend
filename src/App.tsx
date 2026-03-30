@@ -1,12 +1,12 @@
 import { useState } from "react";
 import RadarMap from "./components/RadarMap";
 import useRadarData from "./hooks/useRadarData";
-import Switch from "./components/Switch";
 import PlaybackControls from "./components/PlaybackControls";
+import { defaultSettings } from "./contexts/SettingsContext";
+import SettingsForm from "./components/SettingsForm";
 
 function App() {
-  const [displayGroundTruth, setDisplayGroundTruth] = useState(true);
-  const [extrapolate, setExtrapolate] = useState(true);
+  const [settings, setSettings] = useState(defaultSettings);
 
   const {
     time,
@@ -15,25 +15,23 @@ function App() {
     blueCoverages,
     isPaused,
     setIsPaused,
-  } = useRadarData(extrapolate);
+  } = useRadarData(settings.extrapolate);
 
   return (
     <>
       <div style={{}}>
         Time: {time.toISOString()}{" "}
-        <Switch on={displayGroundTruth} setOn={setDisplayGroundTruth} />
-        Ground Truth?
-        <Switch on={extrapolate} setOn={setExtrapolate} />
-        Extrapolate?
+        <SettingsForm settings={settings} setSettings={setSettings} />
+        <PlaybackControls isPaused={isPaused} setIsPaused={setIsPaused} />
       </div>
-      <PlaybackControls isPaused={isPaused} setIsPaused={setIsPaused} />
+      
       <RadarMap
         time={time}
         blueMonostaticRadars={blueSituationalPicture.friendly_radars}
         blueMonostaticCoverages={blueCoverages}
         redTargetGroundTruths={redGroundTruth}
         redTrajectories={
-          displayGroundTruth
+          settings.displayGroundTruth
             ? redGroundTruth
             : blueSituationalPicture.enemy_tracks
         }
