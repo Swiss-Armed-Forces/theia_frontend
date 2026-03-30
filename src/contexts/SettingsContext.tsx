@@ -9,6 +9,8 @@ export type Settings = {
   borderColor: string;
   accent: string;
   textColor: string;
+  natoBlue: string;
+  natoRed: string;
 };
 
 export const defaultSettings: Settings = {
@@ -20,6 +22,8 @@ export const defaultSettings: Settings = {
   borderColor: "#374151",
   accent: "#E74C3C",
   textColor: "#E5E7EB",
+  natoBlue: "#80e0ff",
+  natoRed: "#ff8080",
 };
 
 export type SettingsContextType = {

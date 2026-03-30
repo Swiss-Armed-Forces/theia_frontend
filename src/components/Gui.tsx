@@ -9,6 +9,7 @@ import Clock from "./Clock";
 import PlaybackControls from "./PlaybackControls";
 import RadarMap from "./RadarMap";
 import SettingsForm from "./SettingsForm";
+import StatisticsDisplay from "./StatisticsDisplay";
 
 export default function Gui({
   time,
@@ -54,6 +55,7 @@ export default function Gui({
       <div style={{ flex: 1, textAlign: "center" }}></div>
       <Clock time={time} />
       <div style={{ flex: 1, textAlign: "center" }}></div>
+      <StatisticsDisplay numberOfFriendlyRadars={friendlyRadars.length} numberOfEnemyTargets={enemyTrajectories.length} />
     </div>
   );
 
