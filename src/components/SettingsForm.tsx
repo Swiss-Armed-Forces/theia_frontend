@@ -16,14 +16,15 @@ export default function SettingsForm({
           setSettings({ ...settings, displayGroundTruth: on });
         }}
       />
-      Ground Truth?
+      Display Ground Truth
+      <br />
       <Switch
         on={settings.extrapolate}
         setOn={(on: boolean) => {
           setSettings({ ...settings, extrapolate: on });
         }}
       />
-      Extrapolate?
+      Extrapolate Trajectory
     </>
   );
 }

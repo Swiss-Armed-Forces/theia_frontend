@@ -52,9 +52,9 @@ export default function RadarMap({
       zoom={9}
       ref={mapRef}
       style={{
-        height: "100%",
-        width: "100%",
-        position: "relative",
+        height: "98%",
+        width: "98%",
+        position: "absolute",
       }}
     >
       <TileLayer
@@ -68,5 +68,5 @@ export default function RadarMap({
       <ClickPopup />
     </MapContainer>
   );
-  return <div style={{ width: "80vw", height: "80vh" }}>{map}</div>;
+  return map;
 }
