@@ -5,12 +5,9 @@ import type {
   Radar,
   Track,
 } from "../hooks/useRadarData";
-import ButtonGroup from "./ButtonGroup";
-import Clock from "./Clock";
-import PlaybackControls from "./PlaybackControls";
 import RadarMap from "./RadarMap";
 import SettingsForm from "./SettingsForm";
-import StatisticsDisplay from "./StatisticsDisplay";
+import TopBar from "./TopBar";
 
 export default function Gui({
   time,
@@ -47,28 +44,6 @@ export default function Gui({
     <SettingsForm settings={settings} setSettings={setSettings} />
   );
 
-  const topBar = (
-    <div
-      style={{
-        height: "4vh",
-        alignItems: "center",
-        display: "flex",
-        ...panelSettings,
-      }}
-    >
-      <PlaybackControls isPaused={isPaused} setIsPaused={setIsPaused} />
-      <div style={{display: "inline-block", minWidth: "2em"}} />
-      <ButtonGroup options={[1, 2, 10, 20, 40].map((n) => `${n}x`)} value={`${speedupFactor}x`} onChange={function (value: string): void {
-        const n = parseInt(value.replace("x", ""))
-        setSpeedupFactor(n)
-      } } />
-      <div style={{ flex: 1, textAlign: "center" }}></div>
-      <Clock time={time} />
-      <div style={{ flex: 1, textAlign: "center" }}></div>
-      <StatisticsDisplay numberOfFriendlyRadars={friendlyRadars.length} numberOfEnemyTargets={enemyTrajectories.length} />
-    </div>
-  );
-
   const sideBar = (
     <span
       style={{
@@ -92,10 +67,19 @@ export default function Gui({
         minHeight: "99vh",
         margin: 0,
         padding: 0,
-        paddingTop: "10px"
+        paddingTop: "10px",
       }}
     >
-      {topBar}
+      <TopBar
+        time={time}
+        isPaused={isPaused}
+        setIsPaused={setIsPaused}
+        speedupFactor={speedupFactor}
+        setSpeedupFactor={setSpeedupFactor}
+        numberOfFriendlyRadars={friendlyRadars.length}
+        numberOfEnemyTargets={enemyTrajectories.length}
+        height={"4vh"}
+      />
       {sideBar}
       <span
         style={{
