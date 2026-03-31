@@ -17,8 +17,6 @@ function App() {
     setSpeedupFactor,
   } = useRadarData(settings.extrapolate);
 
-  console.log("Speedup Factor", speedupFactor);
-
   return (
     <>
       <Gui
