@@ -13,7 +13,11 @@ function App() {
     blueCoverages,
     isPaused,
     setIsPaused,
+    speedupFactor,
+    setSpeedupFactor,
   } = useRadarData(settings.extrapolate);
+
+  console.log("Speedup Factor", speedupFactor);
 
   return (
     <>
@@ -30,6 +34,8 @@ function App() {
             ? redGroundTruth
             : blueSituationalPicture.enemy_tracks
         }
+        speedupFactor={speedupFactor}
+        setSpeedupFactor={setSpeedupFactor}
       />
     </>
   );

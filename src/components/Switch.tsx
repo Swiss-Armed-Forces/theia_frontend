@@ -1,3 +1,5 @@
+import { useSettings } from "../hooks/useSettings";
+
 export default function Switch({
   on,
   setOn,
@@ -5,6 +7,8 @@ export default function Switch({
   on: boolean;
   setOn: (on: boolean) => void;
 }) {
+  const {settings} = useSettings()
+
   return (
     <button
       onClick={() => setOn(!on)}
@@ -13,7 +17,7 @@ export default function Switch({
         height: 26,
         borderRadius: 13,
         border: "none",
-        background: on ? "#4caf50" : "#ccc",
+        background: on ? settings.primary : "#ccc",
         position: "relative",
         cursor: "pointer",
       }}

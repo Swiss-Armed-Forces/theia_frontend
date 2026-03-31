@@ -5,6 +5,7 @@ import type {
   Radar,
   Track,
 } from "../hooks/useRadarData";
+import ButtonGroup from "./ButtonGroup";
 import Clock from "./Clock";
 import PlaybackControls from "./PlaybackControls";
 import RadarMap from "./RadarMap";
@@ -20,6 +21,8 @@ export default function Gui({
   friendlyRadars,
   friendlyCoverages,
   enemyTrajectories,
+  speedupFactor,
+  setSpeedupFactor,
 }: {
   time: Date;
   isPaused: boolean;
@@ -29,6 +32,8 @@ export default function Gui({
   friendlyRadars: Radar[];
   friendlyCoverages: GeoJSONFeature[];
   enemyTrajectories: GroundTruth[] | Track[];
+  speedupFactor: number;
+  setSpeedupFactor: (n: number) => void;
 }) {
   const panelSettings = {
     backgroundColor: settings.panelBackground,
@@ -52,6 +57,11 @@ export default function Gui({
       }}
     >
       <PlaybackControls isPaused={isPaused} setIsPaused={setIsPaused} />
+      <div style={{display: "inline-block", minWidth: "2em"}} />
+      <ButtonGroup options={[1, 2, 10, 20, 40].map((n) => `${n}x`)} value={`${speedupFactor}x`} onChange={function (value: string): void {
+        const n = parseInt(value.replace("x", ""))
+        setSpeedupFactor(n)
+      } } />
       <div style={{ flex: 1, textAlign: "center" }}></div>
       <Clock time={time} />
       <div style={{ flex: 1, textAlign: "center" }}></div>

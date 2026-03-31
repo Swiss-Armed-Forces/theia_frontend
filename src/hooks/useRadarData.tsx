@@ -43,6 +43,7 @@ function generateTimeWindow(
 export default function useRadarData(extrapolate: boolean) {
   const [time, setTime] = useState(new Date("2022-06-27T23:01:40"));
   const [isPaused, setIsPaused] = useState(true);
+  const [speedupFactor, setSpeedupFactor] = useState(1);
   const [redGroundTruth, setRedGroundTruth] = useState([
     DEFAULT_GROUND_TRUTH,
   ] as GroundTruth[]);
@@ -93,6 +94,7 @@ export default function useRadarData(extrapolate: boolean) {
     fetchGroundTruth(times, false).then((groundTruths) =>
       setRedGroundTruth(groundTruths),
     );
+    fetchSpeedupFactor().then((factor) => setSpeedupFactor(factor));
   }, [time, secondsInFuture]);
 
   return {
@@ -102,6 +104,8 @@ export default function useRadarData(extrapolate: boolean) {
     blueCoverages,
     isPaused,
     setIsPaused: postIsPaused,
+    speedupFactor,
+    setSpeedupFactor: postSpeedup,
   };
 }
 
@@ -137,6 +141,35 @@ async function fetchSimulationTime(): Promise<Date> {
   }
   const data: string = await response.json();
   return new Date(data);
+}
+
+async function fetchSpeedupFactor(): Promise<number> {
+  const response = await fetch(`${BASE_URL}/speedup`);
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("Validation error:", JSON.stringify(error, null, 2));
+    throw new Error(`GET /speedup failed: ${response.status}`);
+  }
+  const data: string = await response.json();
+  return parseFloat(data);
+}
+
+async function postSpeedup(speedupFactor: number) {
+  const response = await fetch(
+    `${BASE_URL}/speedup?speedup_factor=${speedupFactor}`,
+    {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+      },
+      body: "",
+    },
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("Validation error:", JSON.stringify(error, null, 2));
+    throw new Error(`POST /speedup failed: ${response.status}`);
+  }
 }
 
 async function fetchIsPaused(): Promise<boolean> {
