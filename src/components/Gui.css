@@ -1,4 +1,7 @@
 :root {
+  --primary: #3388FF;
+  --natoBlue: #80e0ff;
+  --natoRed: #ff8080;
   --primary-bg: #0F172A;
   --panel-bg: #1F2933;
   --panel-border-color: #374151;
@@ -28,7 +31,7 @@
 
 .content {
   display: flex;
-  flex: 2;
+  flex: 1;
   gap: 10px;
   padding: 0px;
   min-height: 0;
@@ -42,4 +45,6 @@
 .main {
   flex: 1;
   position: relative;
+  min-height: 0;
+  display: flex;
 }
