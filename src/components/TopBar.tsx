@@ -1,4 +1,3 @@
-import { useSettings } from "../hooks/useSettings";
 import ButtonGroup from "./ButtonGroup";
 import Clock from "./Clock";
 import PlaybackControls from "./PlaybackControls";
@@ -12,7 +11,6 @@ export default function TopBar({
   setSpeedupFactor,
   numberOfFriendlyRadars,
   numberOfEnemyTargets,
-  height,
 }: {
   time: Date;
   isPaused: boolean;
@@ -21,22 +19,13 @@ export default function TopBar({
   setSpeedupFactor: (factor: number) => void;
   numberOfFriendlyRadars: number;
   numberOfEnemyTargets: number;
-  height: string | number;
 }) {
-  const { settings } = useSettings();
-
   return (
     <div
+      className={"panel"}
       style={{
-        height: height,
         alignItems: "center",
         display: "flex",
-        backgroundColor: settings.panelBackground,
-        margin: "10px",
-        border: "solid",
-        borderColor: settings.borderColor,
-        borderRadius: 10,
-        padding: "10px",
       }}
     >
       <PlaybackControls isPaused={isPaused} setIsPaused={setIsPaused} />

@@ -8,6 +8,7 @@ import type {
 import RadarMap from "./RadarMap";
 import SettingsForm from "./SettingsForm";
 import TopBar from "./TopBar";
+import "./Gui.css";
 
 export default function Gui({
   time,
@@ -32,44 +33,12 @@ export default function Gui({
   speedupFactor: number;
   setSpeedupFactor: (n: number) => void;
 }) {
-  const panelSettings = {
-    backgroundColor: settings.panelBackground,
-    margin: "10px",
-    border: "solid",
-    borderColor: settings.borderColor,
-    borderRadius: 10,
-    padding: "10px",
-  };
   const sidebarContent = (
     <SettingsForm settings={settings} setSettings={setSettings} />
   );
 
-  const sideBar = (
-    <span
-      style={{
-        minWidth: "14vw",
-        minHeight: "86vh",
-        display: "inline-block",
-        ...panelSettings,
-        marginTop: 0,
-      }}
-    >
-      {sidebarContent}
-    </span>
-  );
-
   return (
-    <div
-      style={{
-        backgroundColor: settings.primaryBackground,
-        color: settings.textColor,
-        minWidth: "100vw",
-        minHeight: "99vh",
-        margin: 0,
-        padding: 0,
-        paddingTop: "10px",
-      }}
-    >
+    <div className="app">
       <TopBar
         time={time}
         isPaused={isPaused}
@@ -78,26 +47,19 @@ export default function Gui({
         setSpeedupFactor={setSpeedupFactor}
         numberOfFriendlyRadars={friendlyRadars.length}
         numberOfEnemyTargets={enemyTrajectories.length}
-        height={"4vh"}
       />
-      {sideBar}
-      <span
-        style={{
-          minWidth: "80vw",
-          minHeight: "85vh",
-          display: "inline-block",
-          position: "absolute",
-          ...panelSettings,
-          marginTop: 0,
-        }}
-      >
-        <RadarMap
-          time={time}
-          blueMonostaticRadars={friendlyRadars}
-          blueMonostaticCoverages={friendlyCoverages}
-          redTrajectories={enemyTrajectories}
-        />
-      </span>
+
+      <div className="content">
+        <aside className="sidebar panel">{sidebarContent}</aside>
+        <main className="main panel">
+          <RadarMap
+            time={time}
+            blueMonostaticRadars={friendlyRadars}
+            blueMonostaticCoverages={friendlyCoverages}
+            redTrajectories={enemyTrajectories}
+          />
+        </main>
+      </div>
     </div>
   );
 }

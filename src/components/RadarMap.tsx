@@ -53,7 +53,7 @@ export default function RadarMap({
       ref={mapRef}
       style={{
         height: "98%",
-        width: "98%",
+        width: "99%",
         position: "absolute",
       }}
     >
