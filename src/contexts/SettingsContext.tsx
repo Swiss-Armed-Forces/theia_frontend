@@ -4,6 +4,8 @@ export type Settings = {
   minHeight: number;
   maxHeight: number;
   nHeightBins: number;
+  coverageAlt: number;
+  coverageAzimuthResDegree: number;
   displayGroundTruth: boolean;
   extrapolate: boolean;
   primaryMuted: string;
@@ -20,6 +22,8 @@ export const defaultSettings: Settings = {
   minHeight: 0,
   maxHeight: 15000,
   nHeightBins: 31,
+  coverageAlt: 10000,
+  coverageAzimuthResDegree: 2,
   displayGroundTruth: false,
   extrapolate: false,
   primaryMuted: "#7ba7e4",

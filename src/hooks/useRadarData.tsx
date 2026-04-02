@@ -5,6 +5,7 @@ export type GeoJSONPolygon = Polygon;
 export type GeoJSONFeature = Feature<Polygon>;
 import memoize from "memoizee";
 import stringify from "fast-json-stable-stringify";
+import { useSettings } from "./useSettings";
 // import createFetchClient from "openapi-fetch";
 // import createClient from "openapi-react-query";
 
@@ -41,6 +42,7 @@ function generateTimeWindow(
 }
 
 export default function useRadarData(extrapolate: boolean) {
+  const { settings } = useSettings();
   const [time, setTime] = useState(new Date("2022-06-27T23:01:40"));
   const [isPaused, setIsPaused] = useState(true);
   const [speedupFactor, setSpeedupFactor] = useState(1);
@@ -52,9 +54,6 @@ export default function useRadarData(extrapolate: boolean) {
   );
   const [blueCoverages, setBlueCoverages] = useState([] as GeoJSONFeature[]);
 
-  const targetAlt = 10000;
-  const azimuthResDegree = 2;
-
   const secondsInPast = 60;
   const secondsInFuture = extrapolate ? 60 : 0;
 
@@ -65,12 +64,16 @@ export default function useRadarData(extrapolate: boolean) {
   useEffect(() => {
     Promise.all(
       blueSituationalPicture.friendly_radars.map((radar) =>
-        calculateMonostaticCoverage(radar, targetAlt, azimuthResDegree),
+        calculateMonostaticCoverage(
+          radar,
+          settings.coverageAlt,
+          settings.coverageAzimuthResDegree,
+        ),
       ),
     ).then((coverages) => {
       setBlueCoverages(coverages);
     });
-  }, [blueSituationalPicture]);
+  }, [blueSituationalPicture, settings]);
 
   useEffect(() => {
     const interval = setInterval(() => {
