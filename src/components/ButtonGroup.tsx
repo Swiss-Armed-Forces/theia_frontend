@@ -118,8 +118,8 @@ export function ButtonGroup({
     "--grp-border": settings.borderColor,
     "--grp-text": "inherit",
     "--grp-hover-bg": settings.primaryMuted,
-    "--grp-focus": settings.primary,
-    "--grp-active-bg": settings.primary,
+    "--grp-focus": "var(--primary)",
+    "--grp-active-bg": "var(--primary)",
     "--grp-active-text": "inherit",
     "--grp-active-border": "rgba(0,0,0,0.23)",
   }
