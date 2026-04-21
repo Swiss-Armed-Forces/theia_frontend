@@ -8,7 +8,7 @@ import type {
 } from "../hooks/useRadarData";
 import "leaflet/dist/leaflet.css";
 import { useRef, useState } from "react";
-import MonostaticRadarMarker from "./RadarMarker";
+import { MonostaticRadarMarker } from "./RadarMarker";
 import TrajectoryLayer from "./TrajectoryLayer";
 import ClickPopup from "./ClickPopup";
 import { extractState } from "../util/utils";
@@ -18,11 +18,13 @@ import { useSettings } from "../hooks/useSettings";
 export default function RadarMap({
   time,
   blueMonostaticRadars,
+  bluePclSensors,
   blueMonostaticCoverages,
   redTrajectories,
 }: {
   time: Date;
   blueMonostaticRadars: Sensor[];
+  bluePclSensors: Sensor[];
   blueMonostaticCoverages: GeoJSONFeature[];
   redTrajectories: GroundTruth[] | Track[];
 }) {

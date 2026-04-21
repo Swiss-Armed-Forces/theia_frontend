@@ -12,6 +12,8 @@ import { useSettings } from "./useSettings";
 export type SituationalPicture =
   components["schemas"]["ExtrapolatedSituationalPicture"];
 export type Sensor = components["schemas"]["Sensor-Input"];
+export type Receiver = components["schemas"]["Receiver-Input"];
+export type Transmitter = components["schemas"]["Transmitter-Input"];
 export type Point = components["schemas"]["Point"];
 export type Track = components["schemas"]["ExtrapolatedTrack"];
 export type GroundTruth = components["schemas"]["ExtrapolatedGroundtruth"];

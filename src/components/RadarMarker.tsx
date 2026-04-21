@@ -1,5 +1,5 @@
 import { Marker, Tooltip } from "react-leaflet";
-import type { Sensor } from "../hooks/useRadarData";
+import type { Receiver, Sensor, Transmitter } from "../hooks/useRadarData";
 import L from "leaflet";
 import ms from "milsymbol";
 
@@ -12,11 +12,10 @@ const radarIcon = L.divIcon({
   iconAnchor: [12, 12], // center the icon
 });
 
-function MonostaticRadarTooltip({ radar }: { radar: Sensor }) {
-  // Format the tooltip.
-  const latStr = radar.receiver.point.lat.toFixed(4);
-  const lonStr = radar.receiver.point.lon.toFixed(4);
-  const altStr = radar.receiver.point.alt.toFixed(1);
+function ReceiverDescription({ receiver }: { receiver: Receiver }) {
+  const latStr = receiver.point.lat.toFixed(4);
+  const lonStr = receiver.point.lon.toFixed(4);
+  const altStr = receiver.point.alt.toFixed(1);
 
   const maxBefore = Math.max(
     latStr.indexOf("."),
@@ -27,6 +26,78 @@ function MonostaticRadarTooltip({ radar }: { radar: Sensor }) {
   const alignDecimal = (s: string) =>
     "\u00A0".repeat(maxBefore - s.indexOf(".")) + s;
 
+  return (
+    <>
+      <span style={{ textAlign: "right", fontWeight: "bold" }}>Lat:</span>
+      <span>{alignDecimal(latStr)}°</span>
+      <span style={{ textAlign: "right", fontWeight: "bold" }}>Lon:</span>
+      <span>{alignDecimal(lonStr)}°</span>
+      <span style={{ textAlign: "right", fontWeight: "bold" }}>
+        Alt [MASL]:
+      </span>
+      <span>{alignDecimal(altStr)}</span>
+      <span style={{ textAlign: "right", fontWeight: "bold" }}>Bandwidth:</span>
+      <span>{alignDecimal(receiver.bandwidth.toFixed(2))} MHz</span>
+      <span style={{ textAlign: "right", fontWeight: "bold" }}>
+        Noise temperature:
+      </span>
+      <span>{alignDecimal(receiver.noise_temperature.toFixed(2))} K</span>
+      <span style={{ textAlign: "right", fontWeight: "bold" }}>
+        Prob. false alarm:
+      </span>
+      <span>{alignDecimal(receiver.pfa.toExponential(2))}</span>
+      <span style={{ textAlign: "right", fontWeight: "bold" }}>
+        Rotation time:
+      </span>
+      <span>{alignDecimal(receiver.rotation_time.toFixed(2))} s</span>
+    </>
+  );
+}
+
+function TransmitterDescription({
+  transmitter,
+  showLocation,
+}: {
+  transmitter: Transmitter;
+  showLocation: boolean;
+}) {
+  const latStr = transmitter.point.lat.toFixed(4);
+  const lonStr = transmitter.point.lon.toFixed(4);
+  const altStr = transmitter.point.alt.toFixed(1);
+
+  const maxBefore = Math.max(
+    latStr.indexOf("."),
+    lonStr.indexOf("."),
+    altStr.indexOf("."),
+  );
+
+  const alignDecimal = (s: string) =>
+    "\u00A0".repeat(maxBefore - s.indexOf(".")) + s;
+
+  const locationInfo = showLocation ? (
+    <>
+      <span style={{ textAlign: "right", fontWeight: "bold" }}>Lat:</span>
+      <span>{alignDecimal(latStr)}°</span>
+      <span style={{ textAlign: "right", fontWeight: "bold" }}>Lon:</span>
+      <span>{alignDecimal(lonStr)}°</span>
+      <span style={{ textAlign: "right", fontWeight: "bold" }}>
+        Alt [MASL]:
+      </span>
+    </>
+  ) : (
+    <></>
+  );
+
+  return (
+    <>
+      {locationInfo}
+      <span style={{ textAlign: "right", fontWeight: "bold" }}>Frequency:</span>
+      <span>{alignDecimal((transmitter.frequency / 1000).toFixed(2))} GHz</span>
+    </>
+  );
+}
+
+function MonostaticRadarTooltip({ radar }: { radar: Sensor }) {
   return (
     <Tooltip direction="top" offset={[0, -10]}>
       <div
@@ -40,51 +111,18 @@ function MonostaticRadarTooltip({ radar }: { radar: Sensor }) {
         <span style={{ textAlign: "right", fontWeight: "bold" }}>
           Radar ID:
         </span>
-        <span>{radar.receiver.id}</span>
-        <span style={{ textAlign: "right", fontWeight: "bold" }}>Lat:</span>
-        <span>{alignDecimal(latStr)}°</span>
-        <span style={{ textAlign: "right", fontWeight: "bold" }}>Lon:</span>
-        <span>{alignDecimal(lonStr)}°</span>
-        <span style={{ textAlign: "right", fontWeight: "bold" }}>
-          Alt [MASL]:
-        </span>
-        <span>{alignDecimal(altStr)}</span>
-        <span style={{ textAlign: "right", fontWeight: "bold" }}>
-          Frequency:
-        </span>
-        <span>
-          {alignDecimal((radar.transmitter.frequency / 1000).toFixed(2))} GHz
-        </span>
-        <span style={{ textAlign: "right", fontWeight: "bold" }}>
-          Bandwidth:
-        </span>
-        <span>
-          {alignDecimal(radar.receiver.bandwidth.toFixed(2))} MHz
-        </span>
-        <span style={{ textAlign: "right", fontWeight: "bold" }}>
-          Noise temperature:
-        </span>
-        <span>
-          {alignDecimal(radar.receiver.noise_temperature.toFixed(2))} K
-        </span>
-        <span style={{ textAlign: "right", fontWeight: "bold" }}>
-          Prob. false alarm:
-        </span>
-        <span>
-          {alignDecimal(radar.receiver.pfa.toExponential(2))}
-        </span>
-        <span style={{ textAlign: "right", fontWeight: "bold" }}>
-          Rotation time:
-        </span>
-        <span>
-          {alignDecimal(radar.receiver.rotation_time.toFixed(2))} s
-        </span>
+        <span>{radar.id}</span>
+        <ReceiverDescription receiver={radar.receiver} />
+        <TransmitterDescription
+          transmitter={radar.transmitter}
+          showLocation={false}
+        />
       </div>
     </Tooltip>
   );
 }
 
-export default function MonostaticRadarMarker({
+export function MonostaticRadarMarker({
   radar,
   onClick,
 }: {
@@ -103,3 +141,18 @@ export default function MonostaticRadarMarker({
     </Marker>
   );
 }
+
+// function PclReceiverMarker({receiver}: {receiver: Receiver}) {
+//   <Marker
+//         position={[receiver.point.lat, receiver.point.lon]}
+//         icon={radarIcon}
+//       >
+//         <MonostaticRadarTooltip radar={radar} />
+//       </Marker>
+// }
+
+// export function PclSensorMarkers({sensor}: {sensor: Sensor}) {
+//   return (
+
+//   );
+// }
