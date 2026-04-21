@@ -72,6 +72,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/calculate_pcl_coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Calculate Pcl Coverage
+         * @description Calculate PCL coverage.
+         *
+         *     Parameters
+         *     ----------
+         *     sensor: Sensor
+         *         Sensor
+         *     grid: LatLonHeightGrid
+         *         Calculation grid
+         *     rcs: float
+         *         Radar cross section for which to calculate the coverage
+         *     snr_threshold: float, default theia.config.SNR_THRESHOLD_PCL
+         *         Minimum detectable threshold [dB]
+         *     doppler_threshold: float, default theia.config.DOPPLER_SHIFT_THRESHOLD_PCL
+         *         Minimum detectable Doppler shift [Hz]
+         *     delay_threshold: float, default theia.config.DELAY_THRESHOLD_PCL
+         *         Delay threshold for PCL [us].
+         *         This is used to judge whether a given transmitter - target - receiver geometry
+         *         is in the bistatic or the forward scattering regime.
+         *
+         *     Returns
+         *     -------
+         *     track_init_coverage: GeoJSONFeature
+         *         Region in which a track init can happen only using PCL
+         *     track_update_coverage: GeoJSONFeature
+         *         Region in which a track update can happen only using PCL
+         */
+        post: operations["calculate_pcl_coverage_calculate_pcl_coverage_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -162,13 +206,24 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AttenuationModel */
+        /**
+         * AttenuationModel
+         * @description Representation of an antenna attenuation diagram.
+         *
+         *     Actually represents the squared attenuation coefficients :math:`F_t, F_r`.
+         */
         AttenuationModel: {
             /** Attenuation Table Angles */
             attenuation_table_angles: number[];
             /** Attenuation Table Values */
             attenuation_table_values: number[];
             polarization: components["schemas"]["Polarization"];
+        };
+        /** Body_calculate_pcl_coverage_calculate_pcl_coverage_post */
+        Body_calculate_pcl_coverage_calculate_pcl_coverage_post: {
+            /** Sensors */
+            sensors: components["schemas"]["Sensor-Input"][];
+            grid: components["schemas"]["LatLonHeightGrid"];
         };
         /** ExtrapolatedGroundtruth */
         ExtrapolatedGroundtruth: {
@@ -185,7 +240,7 @@ export interface components {
              */
             time: string;
             /** Friendly Radars */
-            friendly_radars: components["schemas"]["Radar-Output"][];
+            friendly_radars: components["schemas"]["Sensor-Output"][];
             /** Enemy Tracks */
             enemy_tracks: components["schemas"]["ExtrapolatedTrack"][];
         };
@@ -203,7 +258,8 @@ export interface components {
              * @default Feature
              */
             type: string;
-            geometry: components["schemas"]["GeoJSONPolygon"];
+            /** Geometry */
+            geometry: components["schemas"]["GeoJSONPolygon"] | components["schemas"]["GeoJSONMultiPolygon"];
             /**
              * Properties
              * @default {}
@@ -212,13 +268,23 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** GeoJSONMultiPolygon */
+        GeoJSONMultiPolygon: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "MultiPolygon";
+            /** Coordinates */
+            coordinates: number[][][][];
+        };
         /** GeoJSONPolygon */
         GeoJSONPolygon: {
             /**
-             * Type
-             * @default Polygon
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
              */
-            type: string;
+            type: "Polygon";
             /** Coordinates */
             coordinates: number[][][];
         };
@@ -226,6 +292,27 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** LatLonHeightGrid */
+        LatLonHeightGrid: {
+            /** Lat Start */
+            lat_start: number;
+            /** Lat Stop */
+            lat_stop: number;
+            /** Lat Res */
+            lat_res: number;
+            /** Lon Start */
+            lon_start: number;
+            /** Lon Stop */
+            lon_stop: number;
+            /** Lon Res */
+            lon_res: number;
+            /** Height Start */
+            height_start: number;
+            /** Height Stop */
+            height_stop: number;
+            /** Height Res */
+            height_res: number;
         };
         /** MonostaticRadarMeasurementModel */
         MonostaticRadarMeasurementModel: {
@@ -236,10 +323,16 @@ export interface components {
             min_range_uncertainty: number;
             /** Max Range Uncertainty */
             max_range_uncertainty?: number;
-            /** Min Angular Uncertainty */
-            min_angular_uncertainty?: number;
-            /** Max Angular Uncertainty */
-            max_angular_uncertainty?: number;
+            /**
+             * Min Angular Uncertainty
+             * @default 0.017453292519943295
+             */
+            min_angular_uncertainty: number;
+            /**
+             * Max Angular Uncertainty
+             * @default 6.283185307179586
+             */
+            max_angular_uncertainty: number;
         };
         /** Point */
         Point: {
@@ -255,18 +348,6 @@ export interface components {
          * @enum {integer}
          */
         Polarization: 0 | 1;
-        /** Radar */
-        "Radar-Input": {
-            transmitter: components["schemas"]["Transmitter-Input"];
-            receiver: components["schemas"]["Receiver-Input"];
-            error_model: components["schemas"]["MonostaticRadarMeasurementModel"];
-        };
-        /** Radar */
-        "Radar-Output": {
-            transmitter: components["schemas"]["Transmitter-Output"];
-            receiver: components["schemas"]["Receiver-Output"];
-            error_model: components["schemas"]["MonostaticRadarMeasurementModel"];
-        };
         /** Receiver */
         "Receiver-Input": {
             /** Id */
@@ -365,6 +446,22 @@ export interface components {
             vertical_attenuation?: components["schemas"]["AttenuationModel"] | null;
             horizontal_attenuation?: components["schemas"]["AttenuationModel"] | null;
         };
+        /** Sensor */
+        "Sensor-Input": {
+            /** Id */
+            id: number;
+            transmitter: components["schemas"]["Transmitter-Input"];
+            receiver: components["schemas"]["Receiver-Input"];
+            error_model: components["schemas"]["MonostaticRadarMeasurementModel"];
+        };
+        /** Sensor */
+        "Sensor-Output": {
+            /** Id */
+            id: number;
+            transmitter: components["schemas"]["Transmitter-Output"];
+            receiver: components["schemas"]["Receiver-Output"];
+            error_model: components["schemas"]["MonostaticRadarMeasurementModel"];
+        };
         /**
          * Team
          * @enum {string}
@@ -403,6 +500,8 @@ export interface components {
             antenna_height: number;
             /** Antenna Diameter */
             antenna_diameter: number;
+            /** Antenna Gain */
+            antenna_gain: number;
             /** Frequency */
             frequency: number;
             /** Pulse Width */
@@ -436,6 +535,8 @@ export interface components {
             antenna_height: number;
             /** Antenna Diameter */
             antenna_diameter: number;
+            /** Antenna Gain */
+            antenna_gain: number;
             /** Frequency */
             frequency: number;
             /** Pulse Width */
@@ -578,7 +679,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Radar-Input"];
+                "application/json": components["schemas"]["Sensor-Input"];
             };
         };
         responses: {
@@ -589,6 +690,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GeoJSONFeature"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    calculate_pcl_coverage_calculate_pcl_coverage_post: {
+        parameters: {
+            query: {
+                rcs: number;
+                snr_threshold?: number;
+                doppler_threshold?: number;
+                delay_threshold?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Body_calculate_pcl_coverage_calculate_pcl_coverage_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": [
+                        components["schemas"]["GeoJSONFeature"],
+                        components["schemas"]["GeoJSONFeature"]
+                    ];
                 };
             };
             /** @description Validation Error */
