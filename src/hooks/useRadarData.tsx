@@ -11,7 +11,7 @@ import { useSettings } from "./useSettings";
 
 export type SituationalPicture =
   components["schemas"]["ExtrapolatedSituationalPicture"];
-export type Radar = components["schemas"]["Radar-Input"];
+export type Sensor = components["schemas"]["Sensor-Input"];
 export type Point = components["schemas"]["Point"];
 export type Track = components["schemas"]["ExtrapolatedTrack"];
 export type GroundTruth = components["schemas"]["ExtrapolatedGroundtruth"];
@@ -229,7 +229,7 @@ async function fetchGroundTruth(
 
 const calculateMonostaticCoverage = memoize(
   async (
-    radar: Radar,
+    radar: Sensor,
     target_alt: number,
     rcs: number,
     probability_threshold: number = 0.8,

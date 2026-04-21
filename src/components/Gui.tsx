@@ -2,7 +2,7 @@ import type { Settings } from "../contexts/SettingsContext";
 import type {
   GeoJSONFeature,
   GroundTruth,
-  Radar,
+  Sensor,
   Track,
 } from "../hooks/useRadarData";
 import RadarMap from "./RadarMap";
@@ -27,7 +27,7 @@ export default function Gui({
   setIsPaused: (isPaused: boolean) => void;
   settings: Settings;
   setSettings: (settings: Settings) => void;
-  friendlyRadars: Radar[];
+  friendlyRadars: Sensor[];
   friendlyCoverages: GeoJSONFeature[];
   enemyTrajectories: GroundTruth[] | Track[];
   speedupFactor: number;

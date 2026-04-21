@@ -3,7 +3,7 @@ import { Map } from "leaflet";
 import type {
   GeoJSONFeature,
   GroundTruth,
-  Radar,
+  Sensor,
   Track,
 } from "../hooks/useRadarData";
 import "leaflet/dist/leaflet.css";
@@ -22,7 +22,7 @@ export default function RadarMap({
   redTrajectories,
 }: {
   time: Date;
-  blueMonostaticRadars: Radar[];
+  blueMonostaticRadars: Sensor[];
   blueMonostaticCoverages: GeoJSONFeature[];
   redTrajectories: GroundTruth[] | Track[];
 }) {

@@ -1,5 +1,5 @@
 import { Marker, Tooltip } from "react-leaflet";
-import type { Radar } from "../hooks/useRadarData";
+import type { Sensor } from "../hooks/useRadarData";
 import L from "leaflet";
 import ms from "milsymbol";
 
@@ -12,7 +12,7 @@ const radarIcon = L.divIcon({
   iconAnchor: [12, 12], // center the icon
 });
 
-function MonostaticRadarTooltip({ radar }: { radar: Radar }) {
+function MonostaticRadarTooltip({ radar }: { radar: Sensor }) {
   // Format the tooltip.
   const latStr = radar.receiver.point.lat.toFixed(4);
   const lonStr = radar.receiver.point.lon.toFixed(4);
@@ -88,7 +88,7 @@ export default function MonostaticRadarMarker({
   radar,
   onClick,
 }: {
-  radar: Radar;
+  radar: Sensor;
   onClick: () => void;
 }) {
   return (
