@@ -6,6 +6,7 @@ export type GeoJSONFeature = Feature<Polygon>;
 import memoize from "memoizee";
 import stringify from "fast-json-stable-stringify";
 import { useSettings } from "./useSettings";
+import { arePointsEqual } from "../util/utils";
 // import createFetchClient from "openapi-fetch";
 // import createClient from "openapi-react-query";
 
@@ -17,6 +18,20 @@ export type Transmitter = components["schemas"]["Transmitter-Input"];
 export type Point = components["schemas"]["Point"];
 export type Track = components["schemas"]["ExtrapolatedTrack"];
 export type GroundTruth = components["schemas"]["ExtrapolatedGroundtruth"];
+export type LatLonHeightGrid = components["schemas"]["LatLonHeightGrid"];
+
+const DEFAULT_PCL_COVERAGE_GRID: LatLonHeightGrid = {
+  lat_start: 47.1497,
+  lat_stop: 47.53469999999965,
+  lat_res: 0.01,
+  lon_start: 8.0641,
+  lon_stop: 8.861599999999841,
+  lon_res: 0.01,
+  height_start: 1000.0,
+  height_stop: 1000.0,
+  height_res: 1.0,
+};
+const DEFAULT_PCL_RCS = 1.0;
 
 // const fetchClient = createFetchClient<paths>({
 //   baseUrl: "http://localhost:8000",
@@ -64,16 +79,34 @@ export default function useRadarData(extrapolate: boolean) {
   // const time = new Date("2022-06-27T23:01:40");
 
   useEffect(() => {
-    Promise.all(
-      blueSituationalPicture.friendly_radars.map((radar) =>
-        calculateMonostaticCoverage(
-          radar,
-          settings.coverageAlt,
-          settings.coverageAzimuthResDegree,
+    const monostaticSensors = blueSituationalPicture.friendly_radars.filter(
+      (sensor) =>
+        arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
+    );
+    const pclSensors = blueSituationalPicture.friendly_radars.filter(
+      (sensor) =>
+        !arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
+    );
+    Promise.all([
+      Promise.all(
+        monostaticSensors.map((radar) =>
+          calculateMonostaticCoverage(
+            radar,
+            settings.coverageAlt,
+            settings.coverageAzimuthResDegree,
+          ),
         ),
       ),
-    ).then((coverages) => {
-      setBlueCoverages(coverages);
+      calculatePclCoverage(
+        pclSensors,
+        DEFAULT_PCL_RCS,
+        DEFAULT_PCL_COVERAGE_GRID,
+      ),
+    ]).then(([monostaticCoverages, pclCoverages]) => {
+      const trackInitFeatures = monostaticCoverages;
+      trackInitFeatures.push(pclCoverages[0]);
+      // Track init mask.
+      setBlueCoverages(trackInitFeatures);
     });
   }, [blueSituationalPicture, settings]);
 
@@ -257,6 +290,44 @@ const calculateMonostaticCoverage = memoize(
       throw new Error(
         `POST /calculate_monostatic_coverage failed: ${res.status}`,
       );
+    }
+    return res.json();
+  },
+  {
+    promise: true,
+    // We need to use this normalizer because the key order is not guaranteed
+    // to be stable for objects.
+    normalizer: (args) => stringify(args),
+  },
+);
+
+const calculatePclCoverage = memoize(
+  async (
+    sensors: Sensor[],
+    rcs: number,
+    grid: LatLonHeightGrid,
+    snrThreshold: number = 15.0,
+    dopplerThreshold: number = 2.0,
+    delayThreshold: number = 1.0,
+  ): Promise<[GeoJSONFeature, GeoJSONFeature]> => {
+    const query = new URLSearchParams({
+      rcs: String(rcs),
+      snr_threshold: String(snrThreshold),
+      doppler_threshold: String(dopplerThreshold),
+      delay_threshold: String(delayThreshold),
+    });
+    const res = await fetch(`${BASE_URL}/calculate_pcl_coverage?${query}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sensors: sensors,
+        grid: grid,
+      }),
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      console.error("Validation error:", JSON.stringify(error, null, 2));
+      throw new Error(`POST /calculate_pcl_coverage failed: ${res.status}`);
     }
     return res.json();
   },
