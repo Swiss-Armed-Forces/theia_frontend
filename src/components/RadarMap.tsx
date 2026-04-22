@@ -13,9 +13,10 @@ import TrajectoryLayer from "./TrajectoryLayer";
 import ClickPopup from "./ClickPopup";
 import { extractState } from "../util/utils";
 import IntervalSelector from "./IntervalSelector";
-import { useSettings } from "../hooks/useSettings";
+import type { Settings } from "../contexts/SettingsContext";
 
 export default function RadarMap({
+  settings,
   time,
   blueMonostaticRadars,
   bluePclSensors,
@@ -23,6 +24,7 @@ export default function RadarMap({
   blueTrackUpdateCoverages,
   redTrajectories,
 }: {
+  settings: Settings;
   time: Date;
   blueMonostaticRadars: Sensor[];
   bluePclSensors: Sensor[];
@@ -30,7 +32,6 @@ export default function RadarMap({
   blueTrackUpdateCoverages: GeoJSONFeature[];
   redTrajectories: GroundTruth[] | Track[];
 }) {
-  const { settings } = useSettings();
   const mapRef = useRef(null as Map | null);
   const [visibleAltRange, setVisibleAltRange] = useState<[number, number]>([
     settings.minHeight,
@@ -78,6 +79,8 @@ export default function RadarMap({
     <GeoJSON key={i} data={coverage} interactive={false} />
   ));
 
+  console.log(settings.tileServerConfig.name);
+
   return (
     <div
       style={{
@@ -108,8 +111,8 @@ export default function RadarMap({
         }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={settings.tileServerConfig.attribution}
+          url={settings.tileServerConfig.url}
           subdomains={["a", "b", "c"]}
         />
         {trackUpdateCoverageLayers}
@@ -119,25 +122,57 @@ export default function RadarMap({
         {groundTruthLayers}
         <ClickPopup />
       </MapContainer>
-      <div style={{
-        position: "absolute",
-        top: 15,
-        right: 15,
-        zIndex: 1000,           // above the map
-        background: "var(--panel-bg)",
-        padding: "10px 14px",
-        borderRadius: 8,
-        // boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-        fontSize: 14,
-        color: "var(--text)"
-      }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 15,
+          right: 15,
+          zIndex: 1000, // above the map
+          background: "var(--panel-bg)",
+          padding: "10px 14px",
+          borderRadius: 8,
+          // boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+          fontSize: 14,
+          color: "var(--text)",
+        }}
+      >
         <strong>Legend</strong>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-          <span style={{ width: 16, height: 16, background: "var(--primary)", display: "inline-block", borderRadius: 3 }} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginTop: 6,
+          }}
+        >
+          <span
+            style={{
+              width: 16,
+              height: 16,
+              background: "var(--primary)",
+              display: "inline-block",
+              borderRadius: 3,
+            }}
+          />
           Track Init coverage
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-          <span style={{ width: 16, height: 16, background: "var(--accent)", display: "inline-block", borderRadius: 3 }} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginTop: 6,
+          }}
+        >
+          <span
+            style={{
+              width: 16,
+              height: 16,
+              background: "var(--accent)",
+              display: "inline-block",
+              borderRadius: 3,
+            }}
+          />
           Track Update coverage
         </div>
       </div>

@@ -65,6 +65,7 @@ export default function Gui({
         <aside className="sidebar panel">{sidebarContent}</aside>
         <main className="main panel">
           <RadarMap
+            settings={settings}
             time={time}
             blueMonostaticRadars={friendlyMonostaticRadars}
             blueTrackInitCoverages={friendlyTrackInitCoverages}

@@ -16,6 +16,27 @@ export type Settings = {
   textColor: string;
   natoBlue: string;
   natoRed: string;
+  tileServerConfig: TileServerConfig;
+};
+
+type TileServerConfig = {
+  name: "Map" | "Satellite";
+  url: string;
+  attribution: string;
+};
+
+export const OSM_TILE_SERVER = {
+  name: "Map" as const,
+  url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+};
+
+export const ESRI_SATELLITE_TILE_SERVER = {
+  name: "Satellite" as const,
+  url: "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+  attribution:
+    "Esri, Vantor, Earthstar Geographics, and the GIS User Community",
 };
 
 export const defaultSettings: Settings = {
@@ -34,14 +55,15 @@ export const defaultSettings: Settings = {
   textColor: "#E5E7EB",
   natoBlue: "#80e0ff",
   natoRed: "#ff8080",
+  tileServerConfig: OSM_TILE_SERVER,
 };
 
 export type SettingsContextType = {
   settings: Settings;
-  updateSetting: (key: keyof Settings, value: boolean) => void;
+  updateSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
 };
 
-// 👇 Provide a properly typed default value
+// Provide a properly typed default value
 export const SettingsContext = createContext<SettingsContextType>({
   settings: defaultSettings,
   updateSetting: () => {}, // no-op default

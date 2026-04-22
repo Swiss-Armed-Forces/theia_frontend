@@ -1,4 +1,9 @@
-import type { Settings } from "../contexts/SettingsContext";
+import {
+  ESRI_SATELLITE_TILE_SERVER,
+  OSM_TILE_SERVER,
+  type Settings,
+} from "../contexts/SettingsContext";
+import ButtonGroup from "./ButtonGroup";
 import Switch from "./Switch";
 
 export default function SettingsForm({
@@ -25,6 +30,24 @@ export default function SettingsForm({
         }}
       />
       Extrapolate Trajectory
+      <br />
+      <ButtonGroup
+        options={["Map" as const, "Satellite" as const]}
+        value={settings.tileServerConfig.name}
+        onChange={function (value: string): void {
+          console.log("onChange()")
+          if (value === "Map") {
+            setSettings({ ...settings, tileServerConfig: OSM_TILE_SERVER });
+          } else if (value === "Satellite") {
+            setSettings({
+              ...settings,
+              tileServerConfig: ESRI_SATELLITE_TILE_SERVER,
+            });
+          } else {
+            throw new Error("This part of the code should never be reached!")
+          }
+        }}
+      />
     </>
   );
 }
