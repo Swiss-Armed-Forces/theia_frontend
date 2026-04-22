@@ -36,3 +36,7 @@ export function valueCounts<T extends string | number | symbol>(
     {} as Record<T, number>,
   );
 }
+
+export function arePointsEqual(p1: Point, p2: Point): boolean {
+  return p1.lat === p2.lat && p1.lon === p2.lon && p1.alt === p2.alt;
+}

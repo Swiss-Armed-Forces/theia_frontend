@@ -8,7 +8,7 @@ import type {
 } from "../hooks/useRadarData";
 import "leaflet/dist/leaflet.css";
 import { useRef, useState } from "react";
-import { MonostaticRadarMarker } from "./RadarMarker";
+import { MonostaticRadarMarker, PclSensorMarkers } from "./RadarMarker";
 import TrajectoryLayer from "./TrajectoryLayer";
 import ClickPopup from "./ClickPopup";
 import { extractState } from "../util/utils";
@@ -49,6 +49,9 @@ export default function RadarMap({
         throw new Error("Function not implemented.");
       }}
     />
+  ));
+  const pclSensorMarkers = bluePclSensors.map((sensor, i) => (
+    <PclSensorMarkers key={i} sensor={sensor} />
   ));
   const groundTruthLayers = visibleRedTrajectories.map((trajectory) => (
     <TrajectoryLayer
@@ -98,6 +101,7 @@ export default function RadarMap({
         />
         {coverageLayers}
         {monostaticRadarMarkers}
+        {pclSensorMarkers}
         {groundTruthLayers}
         <ClickPopup />
       </MapContainer>

@@ -4,9 +4,30 @@ import L from "leaflet";
 import ms from "milsymbol";
 
 const friendlyRadarSymbol = new ms.Symbol("10231500002203000000", { size: 24 });
+const friendlyReceiverSymbol = new ms.Symbol("10231500002203000000", {
+  size: 24,
+  additionalInformation: "Receiver",
+});
+const civilTransmitterSymbol = new ms.Symbol("10242000001212010000", {
+  size: 24,
+});
 
 const radarIcon = L.divIcon({
   html: friendlyRadarSymbol.asSVG(),
+  className: "", // remove default 'leaflet-div-icon' styles if needed
+  iconSize: [24, 24],
+  iconAnchor: [12, 12], // center the icon
+});
+
+const receiverIcon = L.divIcon({
+  html: friendlyReceiverSymbol.asSVG(),
+  className: "", // remove default 'leaflet-div-icon' styles if needed
+  iconSize: [24, 24],
+  iconAnchor: [12, 12], // center the icon
+});
+
+const transmitterIcon = L.divIcon({
+  html: civilTransmitterSymbol.asSVG(),
   className: "", // remove default 'leaflet-div-icon' styles if needed
   iconSize: [24, 24],
   iconAnchor: [12, 12], // center the icon
@@ -83,6 +104,7 @@ function TransmitterDescription({
       <span style={{ textAlign: "right", fontWeight: "bold" }}>
         Alt [MASL]:
       </span>
+      <span>{alignDecimal(altStr)}</span>
     </>
   ) : (
     <></>
@@ -92,7 +114,7 @@ function TransmitterDescription({
     <>
       {locationInfo}
       <span style={{ textAlign: "right", fontWeight: "bold" }}>Frequency:</span>
-      <span>{alignDecimal((transmitter.frequency / 1000).toFixed(2))} GHz</span>
+      <span>{alignDecimal((transmitter.frequency).toFixed(2))} MHz</span>
     </>
   );
 }
@@ -142,17 +164,68 @@ export function MonostaticRadarMarker({
   );
 }
 
-// function PclReceiverMarker({receiver}: {receiver: Receiver}) {
-//   <Marker
-//         position={[receiver.point.lat, receiver.point.lon]}
-//         icon={radarIcon}
-//       >
-//         <MonostaticRadarTooltip radar={radar} />
-//       </Marker>
-// }
+function PclReceiverMarker({ receiver }: { receiver: Receiver }) {
+  return (
+    <Marker
+      position={[receiver.point.lat, receiver.point.lon]}
+      icon={receiverIcon}
+    >
+      <Tooltip direction="top" offset={[0, -10]}>
+        <span style={{ fontWeight: "bold" }}>
+          PCL Receiver (ID {receiver.id})
+        </span>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "auto auto",
+            columnGap: "8px",
+            fontFamily: "monospace",
+          }}
+        >
+          <ReceiverDescription receiver={receiver} />
+        </div>
+      </Tooltip>
+    </Marker>
+  );
+}
 
-// export function PclSensorMarkers({sensor}: {sensor: Sensor}) {
-//   return (
+function PclTransmitterMarker({
+  receiver: transmitter,
+}: {
+  receiver: Transmitter;
+}) {
+  return (
+    <Marker
+      position={[transmitter.point.lat, transmitter.point.lon]}
+      icon={transmitterIcon}
+    >
+      <Tooltip direction="top" offset={[0, -10]}>
+        <span style={{ fontWeight: "bold" }}>
+          PCL Transmitter (ID {transmitter.id})
+        </span>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "auto auto",
+            columnGap: "8px",
+            fontFamily: "monospace",
+          }}
+        >
+          <TransmitterDescription
+            transmitter={transmitter}
+            showLocation={true}
+          />
+        </div>
+      </Tooltip>
+    </Marker>
+  );
+}
 
-//   );
-// }
+export function PclSensorMarkers({ sensor }: { sensor: Sensor }) {
+  return (
+    <>
+      <PclReceiverMarker receiver={sensor.receiver} />
+      <PclTransmitterMarker receiver={sensor.transmitter} />
+    </>
+  );
+}

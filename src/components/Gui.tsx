@@ -9,6 +9,7 @@ import RadarMap from "./RadarMap";
 import SettingsForm from "./SettingsForm";
 import TopBar from "./TopBar";
 import "./Gui.css";
+import { arePointsEqual } from "../util/utils";
 
 export default function Gui({
   time,
@@ -37,6 +38,15 @@ export default function Gui({
     <SettingsForm settings={settings} setSettings={setSettings} />
   );
 
+  const friendlyMonostaticRadars = friendlyRadars.filter((sensor) =>
+    arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
+  );
+
+  const friendlyPclSensors = friendlyRadars.filter(
+    (sensor) =>
+      !arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
+  );
+
   return (
     <div className="app">
       <TopBar
@@ -54,8 +64,9 @@ export default function Gui({
         <main className="main panel">
           <RadarMap
             time={time}
-            blueMonostaticRadars={friendlyRadars}
+            blueMonostaticRadars={friendlyMonostaticRadars}
             blueMonostaticCoverages={friendlyCoverages}
+            bluePclSensors={friendlyPclSensors}
             redTrajectories={enemyTrajectories}
           />
         </main>
