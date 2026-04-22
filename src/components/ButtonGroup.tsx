@@ -14,55 +14,6 @@ export interface ButtonGroupProps {
   onChange: (value: string) => void;
 }
 
-// const colorStyles = {
-//   default: {
-//     "--grp-border": "rgba(0,0,0,0.23)",
-//     "--grp-text": "inherit",
-//     "--grp-hover-bg": "rgba(0,0,0,0.06)",
-//     "--grp-focus": "rgba(0,0,0,0.2)",
-//     "--grp-active-bg": "rgba(0,0,0,0.10)",
-//     "--grp-active-text": "inherit",
-//     "--grp-active-border": "rgba(0,0,0,0.23)",
-//   } as React.CSSProperties,
-//   purple: {
-//     "--grp-border": "#534AB7",
-//     "--grp-text": "#534AB7",
-//     "--grp-hover-bg": "rgba(83,74,183,0.08)",
-//     "--grp-focus": "rgba(83,74,183,0.3)",
-//     "--grp-active-bg": "#534AB7",
-//     "--grp-active-text": "#fff",
-//     "--grp-active-border": "#534AB7",
-//   } as React.CSSProperties,
-//   teal: {
-//     "--grp-border": "#0F6E56",
-//     "--grp-text": "#0F6E56",
-//     "--grp-hover-bg": "rgba(15,110,86,0.08)",
-//     "--grp-focus": "rgba(15,110,86,0.3)",
-//     "--grp-active-bg": "#0F6E56",
-//     "--grp-active-text": "#fff",
-//     "--grp-active-border": "#0F6E56",
-//   } as React.CSSProperties,
-//   coral: {
-//     "--grp-border": "#993C1D",
-//     "--grp-text": "#993C1D",
-//     "--grp-hover-bg": "rgba(153,60,29,0.08)",
-//     "--grp-focus": "rgba(153,60,29,0.3)",
-//     "--grp-active-bg": "#993C1D",
-//     "--grp-active-text": "#fff",
-//     "--grp-active-border": "#993C1D",
-//   } as React.CSSProperties,
-//   blue: {
-//     "--grp-border": "#185FA5",
-//     "--grp-text": "#185FA5",
-//     "--grp-hover-bg": "rgba(24,95,165,0.08)",
-//     "--grp-focus": "rgba(24,95,165,0.3)",
-//     "--grp-active-bg": "#185FA5",
-//     "--grp-active-text": "#fff",
-//     "--grp-active-border": "#185FA5",
-//   } as React.CSSProperties,
-// };
-
-
 const styles = {
   group: {
     display: "inline-flex",
