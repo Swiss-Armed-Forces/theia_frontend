@@ -19,13 +19,15 @@ export default function RadarMap({
   time,
   blueMonostaticRadars,
   bluePclSensors,
-  blueMonostaticCoverages,
+  blueTrackInitCoverages,
+  blueTrackUpdateCoverages,
   redTrajectories,
 }: {
   time: Date;
   blueMonostaticRadars: Sensor[];
   bluePclSensors: Sensor[];
-  blueMonostaticCoverages: GeoJSONFeature[];
+  blueTrackInitCoverages: GeoJSONFeature[];
+  blueTrackUpdateCoverages: GeoJSONFeature[];
   redTrajectories: GroundTruth[] | Track[];
 }) {
   const { settings } = useSettings();
@@ -61,7 +63,18 @@ export default function RadarMap({
       isBlue={false}
     />
   ));
-  const coverageLayers = blueMonostaticCoverages.map((coverage, i) => (
+
+  const trackUpdateCoverageLayers = blueTrackUpdateCoverages.map(
+    (coverage, i) => (
+      <GeoJSON
+        key={i}
+        data={coverage}
+        interactive={false}
+        style={{ color: settings.accent }}
+      />
+    ),
+  );
+  const trackInitCoverageLayers = blueTrackInitCoverages.map((coverage, i) => (
     <GeoJSON key={i} data={coverage} interactive={false} />
   ));
 
@@ -99,12 +112,35 @@ export default function RadarMap({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           subdomains={["a", "b", "c"]}
         />
-        {coverageLayers}
+        {trackUpdateCoverageLayers}
+        {trackInitCoverageLayers}
         {monostaticRadarMarkers}
         {pclSensorMarkers}
         {groundTruthLayers}
         <ClickPopup />
       </MapContainer>
+      <div style={{
+        position: "absolute",
+        top: 15,
+        right: 15,
+        zIndex: 1000,           // above the map
+        background: "var(--panel-bg)",
+        padding: "10px 14px",
+        borderRadius: 8,
+        // boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+        fontSize: 14,
+        color: "var(--text)"
+      }}>
+        <strong>Legend</strong>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
+          <span style={{ width: 16, height: 16, background: "var(--primary)", display: "inline-block", borderRadius: 3 }} />
+          Track Init coverage
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
+          <span style={{ width: 16, height: 16, background: "var(--accent)", display: "inline-block", borderRadius: 3 }} />
+          Track Update coverage
+        </div>
+      </div>
     </div>
   );
 }

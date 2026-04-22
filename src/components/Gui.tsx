@@ -18,7 +18,8 @@ export default function Gui({
   settings,
   setSettings,
   friendlyRadars,
-  friendlyCoverages,
+  friendlyTrackInitCoverages,
+  friendlyTrackUpdateCoverages,
   enemyTrajectories,
   speedupFactor,
   setSpeedupFactor,
@@ -29,7 +30,8 @@ export default function Gui({
   settings: Settings;
   setSettings: (settings: Settings) => void;
   friendlyRadars: Sensor[];
-  friendlyCoverages: GeoJSONFeature[];
+  friendlyTrackInitCoverages: GeoJSONFeature[];
+  friendlyTrackUpdateCoverages: GeoJSONFeature[];
   enemyTrajectories: GroundTruth[] | Track[];
   speedupFactor: number;
   setSpeedupFactor: (n: number) => void;
@@ -65,7 +67,8 @@ export default function Gui({
           <RadarMap
             time={time}
             blueMonostaticRadars={friendlyMonostaticRadars}
-            blueMonostaticCoverages={friendlyCoverages}
+            blueTrackInitCoverages={friendlyTrackInitCoverages}
+            blueTrackUpdateCoverages={friendlyTrackUpdateCoverages}
             bluePclSensors={friendlyPclSensors}
             redTrajectories={enemyTrajectories}
           />

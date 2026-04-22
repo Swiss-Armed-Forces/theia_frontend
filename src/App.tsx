@@ -10,7 +10,8 @@ function App() {
     time,
     blueSituationalPicture,
     redGroundTruth,
-    blueCoverages,
+    blueTrackInitCoverages,
+    blueTrackUpdateCoverages,
     isPaused,
     setIsPaused,
     speedupFactor,
@@ -26,7 +27,8 @@ function App() {
         settings={settings}
         setSettings={setSettings}
         friendlyRadars={blueSituationalPicture.friendly_radars}
-        friendlyCoverages={blueCoverages}
+        friendlyTrackInitCoverages={blueTrackInitCoverages}
+        friendlyTrackUpdateCoverages={blueTrackUpdateCoverages}
         enemyTrajectories={
           settings.displayGroundTruth
             ? redGroundTruth

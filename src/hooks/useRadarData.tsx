@@ -69,7 +69,12 @@ export default function useRadarData(extrapolate: boolean) {
   const [blueSituationalPicture, setBlueSituationalPicture] = useState(
     DEFAULT_SITUATIONAL_PICTURE,
   );
-  const [blueCoverages, setBlueCoverages] = useState([] as GeoJSONFeature[]);
+  const [blueTrackInitCoverages, setBlueTrackInitCoverages] = useState(
+    [] as GeoJSONFeature[],
+  );
+  const [blueTrackUpdateCoverages, setBlueTrackUpdateCoverages] = useState(
+    [] as GeoJSONFeature[],
+  );
 
   const secondsInPast = 60;
   const secondsInFuture = extrapolate ? 60 : 0;
@@ -105,8 +110,10 @@ export default function useRadarData(extrapolate: boolean) {
     ]).then(([monostaticCoverages, pclCoverages]) => {
       const trackInitFeatures = monostaticCoverages;
       trackInitFeatures.push(pclCoverages[0]);
+      const trackUpdateFeatures = [pclCoverages[1]]
       // Track init mask.
-      setBlueCoverages(trackInitFeatures);
+      setBlueTrackInitCoverages(trackInitFeatures);
+      setBlueTrackUpdateCoverages(trackUpdateFeatures);
     });
   }, [blueSituationalPicture, settings]);
 
@@ -139,7 +146,8 @@ export default function useRadarData(extrapolate: boolean) {
     time,
     blueSituationalPicture,
     redGroundTruth,
-    blueCoverages,
+    blueTrackInitCoverages,
+    blueTrackUpdateCoverages,
     isPaused,
     setIsPaused: postIsPaused,
     speedupFactor,
