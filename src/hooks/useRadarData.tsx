@@ -12,13 +12,15 @@ import { arePointsEqual } from "../util/utils";
 
 export type SituationalPicture =
   components["schemas"]["ExtrapolatedSituationalPicture"];
-export type Sensor = components["schemas"]["Sensor-Input"];
+export type MonostaticSensor = components["schemas"]["MonostaticSensor"];
+export type PclSensor = components["schemas"]["PclSensor"];
 export type Receiver = components["schemas"]["Receiver-Input"];
 export type Transmitter = components["schemas"]["Transmitter-Input"];
 export type Point = components["schemas"]["Point"];
 export type Track = components["schemas"]["ExtrapolatedTrack"];
 export type GroundTruth = components["schemas"]["ExtrapolatedGroundtruth"];
 export type LatLonHeightGrid = components["schemas"]["LatLonHeightGrid"];
+export type Sensor = MonostaticSensor | PclSensor;
 
 const DEFAULT_PCL_COVERAGE_GRID: LatLonHeightGrid = {
   lat_start: 47.1497,
@@ -87,11 +89,11 @@ export default function useRadarData(extrapolate: boolean) {
     const monostaticSensors = blueSituationalPicture.friendly_radars.filter(
       (sensor) =>
         arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
-    );
+    ) as MonostaticSensor[];
     const pclSensors = blueSituationalPicture.friendly_radars.filter(
       (sensor) =>
         !arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
-    );
+    ) as PclSensor[];
     Promise.all([
       Promise.all(
         monostaticSensors.map((radar) =>
@@ -110,7 +112,7 @@ export default function useRadarData(extrapolate: boolean) {
     ]).then(([monostaticCoverages, pclCoverages]) => {
       const trackInitFeatures = monostaticCoverages;
       trackInitFeatures.push(pclCoverages[0]);
-      const trackUpdateFeatures = [pclCoverages[1]]
+      const trackUpdateFeatures = [pclCoverages[1]];
       // Track init mask.
       setBlueTrackInitCoverages(trackInitFeatures);
       setBlueTrackUpdateCoverages(trackUpdateFeatures);
@@ -272,7 +274,7 @@ async function fetchGroundTruth(
 
 const calculateMonostaticCoverage = memoize(
   async (
-    radar: Sensor,
+    radar: MonostaticSensor,
     target_alt: number,
     rcs: number,
     probability_threshold: number = 0.8,
@@ -311,7 +313,7 @@ const calculateMonostaticCoverage = memoize(
 
 const calculatePclCoverage = memoize(
   async (
-    sensors: Sensor[],
+    sensors: PclSensor[],
     rcs: number,
     grid: LatLonHeightGrid,
     snrThreshold: number = 15.0,

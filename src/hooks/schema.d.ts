@@ -87,8 +87,8 @@ export interface paths {
          *
          *     Parameters
          *     ----------
-         *     sensor: Sensor
-         *         Sensor
+         *     sensors: list[PclSensor]
+         *         Sensors
          *     grid: LatLonHeightGrid
          *         Calculation grid
          *     rcs: float
@@ -222,7 +222,7 @@ export interface components {
         /** Body_calculate_pcl_coverage_calculate_pcl_coverage_post */
         Body_calculate_pcl_coverage_calculate_pcl_coverage_post: {
             /** Sensors */
-            sensors: components["schemas"]["Sensor-Input"][];
+            sensors: components["schemas"]["PclSensor-Input"][];
             grid: components["schemas"]["LatLonHeightGrid"];
         };
         /** ExtrapolatedGroundtruth */
@@ -240,7 +240,7 @@ export interface components {
              */
             time: string;
             /** Friendly Radars */
-            friendly_radars: components["schemas"]["Sensor-Output"][];
+            friendly_radars: (components["schemas"]["MonostaticSensor-Output"] | components["schemas"]["PclSensor-Output"])[];
             /** Enemy Tracks */
             enemy_tracks: components["schemas"]["ExtrapolatedTrack"][];
         };
@@ -333,6 +333,40 @@ export interface components {
              * @default 6.283185307179586
              */
             max_angular_uncertainty: number;
+        };
+        /** MonostaticSensor */
+        "MonostaticSensor-Input": {
+            /** Id */
+            id: number;
+            transmitter: components["schemas"]["Transmitter-Input"];
+            receiver: components["schemas"]["Receiver-Input"];
+            error_model: components["schemas"]["MonostaticRadarMeasurementModel"];
+        };
+        /** MonostaticSensor */
+        "MonostaticSensor-Output": {
+            /** Id */
+            id: number;
+            transmitter: components["schemas"]["Transmitter-Output"];
+            receiver: components["schemas"]["Receiver-Output"];
+            error_model: components["schemas"]["MonostaticRadarMeasurementModel"];
+        };
+        /** PclMeasurementModel */
+        PclMeasurementModel: Record<string, never>;
+        /** PclSensor */
+        "PclSensor-Input": {
+            /** Id */
+            id: number;
+            transmitter: components["schemas"]["Transmitter-Input"];
+            receiver: components["schemas"]["Receiver-Input"];
+            error_model: components["schemas"]["PclMeasurementModel"];
+        };
+        /** PclSensor */
+        "PclSensor-Output": {
+            /** Id */
+            id: number;
+            transmitter: components["schemas"]["Transmitter-Output"];
+            receiver: components["schemas"]["Receiver-Output"];
+            error_model: components["schemas"]["PclMeasurementModel"];
         };
         /** Point */
         Point: {
@@ -445,22 +479,6 @@ export interface components {
             antenna_efficiency_value: number;
             vertical_attenuation?: components["schemas"]["AttenuationModel"] | null;
             horizontal_attenuation?: components["schemas"]["AttenuationModel"] | null;
-        };
-        /** Sensor */
-        "Sensor-Input": {
-            /** Id */
-            id: number;
-            transmitter: components["schemas"]["Transmitter-Input"];
-            receiver: components["schemas"]["Receiver-Input"];
-            error_model: components["schemas"]["MonostaticRadarMeasurementModel"];
-        };
-        /** Sensor */
-        "Sensor-Output": {
-            /** Id */
-            id: number;
-            transmitter: components["schemas"]["Transmitter-Output"];
-            receiver: components["schemas"]["Receiver-Output"];
-            error_model: components["schemas"]["MonostaticRadarMeasurementModel"];
         };
         /**
          * Team
@@ -679,7 +697,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Sensor-Input"];
+                "application/json": components["schemas"]["MonostaticSensor-Input"];
             };
         };
         responses: {
