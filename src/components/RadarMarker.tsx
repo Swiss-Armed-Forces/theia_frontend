@@ -85,11 +85,13 @@ function TransmitterDescription({
   const latStr = transmitter.point.lat.toFixed(4);
   const lonStr = transmitter.point.lon.toFixed(4);
   const altStr = transmitter.point.alt.toFixed(1);
+  const freqStr = transmitter.frequency.toFixed(1);
 
   const maxBefore = Math.max(
     latStr.indexOf("."),
     lonStr.indexOf("."),
     altStr.indexOf("."),
+    freqStr.indexOf("."),
   );
 
   const alignDecimal = (s: string) =>
@@ -114,7 +116,7 @@ function TransmitterDescription({
     <>
       {locationInfo}
       <span style={{ textAlign: "right", fontWeight: "bold" }}>Frequency:</span>
-      <span>{alignDecimal((transmitter.frequency).toFixed(2))} MHz</span>
+      <span>{alignDecimal(transmitter.frequency.toFixed(2))} MHz</span>
     </>
   );
 }

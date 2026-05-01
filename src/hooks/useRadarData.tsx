@@ -12,8 +12,8 @@ import { arePointsEqual } from "../util/utils";
 
 export type SituationalPicture =
   components["schemas"]["ExtrapolatedSituationalPicture"];
-export type MonostaticSensor = components["schemas"]["MonostaticSensor"];
-export type PclSensor = components["schemas"]["PclSensor"];
+export type MonostaticSensor = components["schemas"]["MonostaticSensor-Input"];
+export type PclSensor = components["schemas"]["PclSensor-Input"];
 export type Receiver = components["schemas"]["Receiver-Input"];
 export type Transmitter = components["schemas"]["Transmitter-Input"];
 export type Point = components["schemas"]["Point"];
@@ -111,8 +111,14 @@ export default function useRadarData(extrapolate: boolean) {
       ),
     ]).then(([monostaticCoverages, pclCoverages]) => {
       const trackInitFeatures = monostaticCoverages;
-      trackInitFeatures.push(pclCoverages[0]);
-      const trackUpdateFeatures = [pclCoverages[1]];
+      if (pclCoverages[0].geometry.coordinates.length > 0) {
+        trackInitFeatures.push(pclCoverages[0]);
+      }
+      const trackUpdateFeatures =
+        pclCoverages[0].geometry.coordinates.length > 0
+          ? [pclCoverages[1]]
+          : [];
+
       // Track init mask.
       setBlueTrackInitCoverages(trackInitFeatures);
       setBlueTrackUpdateCoverages(trackUpdateFeatures);
