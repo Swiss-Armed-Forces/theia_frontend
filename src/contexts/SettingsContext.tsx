@@ -22,14 +22,14 @@ export type Settings = {
 };
 
 const DEFAULT_PCL_COVERAGE_GRID: LatLonHeightGrid = {
-  lat_start: 46.28243,
-  lat_stop: 47.06638,
+  lat_start: 46.92588,
+  lat_stop: 47.67648,
   lat_res: 0.01,
-  lon_start: 8.0854,
-  lon_stop: 8.84444,
+  lon_start: 7.47648,
+  lon_stop: 8.42396,
   lon_res: 0.01,
-  height_start: 1000.0,
-  height_stop: 1000.0,
+  height_start: 2000.0,
+  height_stop: 2000.0,
   height_res: 1.0,
 };
 
@@ -57,7 +57,7 @@ export const defaultSettings: Settings = {
   minHeight: 0,
   maxHeight: 15000,
   nHeightBins: 31,
-  coverageAlt: 10000,
+  coverageAlt: 2000,
   coverageAzimuthResDegree: 2,
   displayGroundTruth: false,
   extrapolate: false,
