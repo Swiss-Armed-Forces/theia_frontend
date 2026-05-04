@@ -22,17 +22,6 @@ export type GroundTruth = components["schemas"]["ExtrapolatedGroundtruth"];
 export type LatLonHeightGrid = components["schemas"]["LatLonHeightGrid"];
 export type Sensor = MonostaticSensor | PclSensor;
 
-const DEFAULT_PCL_COVERAGE_GRID: LatLonHeightGrid = {
-  lat_start: 47.1497,
-  lat_stop: 47.53469999999965,
-  lat_res: 0.01,
-  lon_start: 8.0641,
-  lon_stop: 8.861599999999841,
-  lon_res: 0.01,
-  height_start: 1000.0,
-  height_stop: 1000.0,
-  height_res: 1.0,
-};
 const DEFAULT_PCL_RCS = 1.0;
 
 // const fetchClient = createFetchClient<paths>({
@@ -107,7 +96,7 @@ export default function useRadarData(extrapolate: boolean) {
       calculatePclCoverage(
         pclSensors,
         DEFAULT_PCL_RCS,
-        DEFAULT_PCL_COVERAGE_GRID,
+        settings.pclCalcGrid,
       ),
     ]).then(([monostaticCoverages, pclCoverages]) => {
       const trackInitFeatures = monostaticCoverages;

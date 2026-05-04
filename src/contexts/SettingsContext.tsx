@@ -1,4 +1,5 @@
 import { createContext } from "react";
+import type { LatLonHeightGrid } from "../hooks/useRadarData";
 
 export type Settings = {
   minHeight: number;
@@ -17,6 +18,19 @@ export type Settings = {
   natoBlue: string;
   natoRed: string;
   tileServerConfig: TileServerConfig;
+  pclCalcGrid: LatLonHeightGrid;
+};
+
+const DEFAULT_PCL_COVERAGE_GRID: LatLonHeightGrid = {
+  lat_start: 46.28243,
+  lat_stop: 47.06638,
+  lat_res: 0.01,
+  lon_start: 8.0854,
+  lon_stop: 8.84444,
+  lon_res: 0.01,
+  height_start: 1000.0,
+  height_stop: 1000.0,
+  height_res: 1.0,
 };
 
 type TileServerConfig = {
@@ -56,6 +70,7 @@ export const defaultSettings: Settings = {
   natoBlue: "#80e0ff",
   natoRed: "#ff8080",
   tileServerConfig: OSM_TILE_SERVER,
+  pclCalcGrid: DEFAULT_PCL_COVERAGE_GRID,
 };
 
 export type SettingsContextType = {

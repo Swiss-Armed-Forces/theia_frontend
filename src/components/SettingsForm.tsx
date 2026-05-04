@@ -3,7 +3,9 @@ import {
   OSM_TILE_SERVER,
   type Settings,
 } from "../contexts/SettingsContext";
+import type { LatLonHeightGrid } from "../hooks/useRadarData";
 import ButtonGroup from "./ButtonGroup";
+import GridDefinition from "./GridDefinition";
 import Switch from "./Switch";
 
 export default function SettingsForm({
@@ -35,7 +37,7 @@ export default function SettingsForm({
         options={["Map" as const, "Satellite" as const]}
         value={settings.tileServerConfig.name}
         onChange={function (value: string): void {
-          console.log("onChange()")
+          console.log("onChange()");
           if (value === "Map") {
             setSettings({ ...settings, tileServerConfig: OSM_TILE_SERVER });
           } else if (value === "Satellite") {
@@ -44,8 +46,18 @@ export default function SettingsForm({
               tileServerConfig: ESRI_SATELLITE_TILE_SERVER,
             });
           } else {
-            throw new Error("This part of the code should never be reached!")
+            throw new Error("This part of the code should never be reached!");
           }
+        }}
+      />
+      <GridDefinition
+        grid={settings.pclCalcGrid}
+        setGrid={(grid: LatLonHeightGrid) => {
+          console.log("SetPclGrid()", grid)
+          setSettings({
+            ...settings,
+            pclCalcGrid: grid,
+          });
         }}
       />
     </>
