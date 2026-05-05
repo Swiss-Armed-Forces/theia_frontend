@@ -100,11 +100,14 @@ export default function useRadarData(extrapolate: boolean) {
       ),
     ]).then(([monostaticCoverages, pclCoverages]) => {
       const trackInitFeatures = monostaticCoverages;
+      if (pclCoverages.length != 2) {
+        throw Error("Expected 2")
+      }
       if (pclCoverages[0].geometry.coordinates.length > 0) {
         trackInitFeatures.push(pclCoverages[0]);
       }
       const trackUpdateFeatures =
-        pclCoverages[0].geometry.coordinates.length > 0
+        pclCoverages[1].geometry.coordinates.length > 0
           ? [pclCoverages[1]]
           : [];
 
