@@ -14,6 +14,7 @@ import ClickPopup from "./ClickPopup";
 import { extractState } from "../util/utils";
 import IntervalSelector from "./IntervalSelector";
 import type { Settings } from "../contexts/SettingsContext";
+import type { LineString } from "geojson";
 
 export default function RadarMap({
   settings,
@@ -79,7 +80,29 @@ export default function RadarMap({
     <GeoJSON key={i} data={coverage} interactive={false} />
   ));
 
-  console.log(settings.tileServerConfig.name);
+  const calcGridLayer = (
+    <GeoJSON
+      data={
+        {
+          type: "LineString",
+          coordinates: [
+            [settings.pclCalcGrid.lon_start, settings.pclCalcGrid.lat_start],
+            [settings.pclCalcGrid.lon_stop, settings.pclCalcGrid.lat_start],
+            [settings.pclCalcGrid.lon_stop, settings.pclCalcGrid.lat_stop],
+            [settings.pclCalcGrid.lon_start, settings.pclCalcGrid.lat_stop],
+            [settings.pclCalcGrid.lon_start, settings.pclCalcGrid.lat_start],
+          ],
+        } as LineString
+      }
+      interactive={false}
+      style={{
+        color: "black",
+        weight: 2,
+        dashArray: "6 4",
+        fill: false,
+      }}
+    />
+  );
 
   return (
     <div
@@ -120,6 +143,7 @@ export default function RadarMap({
         {monostaticRadarMarkers}
         {pclSensorMarkers}
         {groundTruthLayers}
+        {calcGridLayer}
         <ClickPopup />
       </MapContainer>
       <div
