@@ -18,6 +18,15 @@ function App() {
     setSpeedupFactor,
   } = useRadarData(settings.extrapolate);
 
+  let redTrajectories = [];
+  if (settings.perspective === "BLUE") {
+    redTrajectories = blueSituationalPicture.enemy_tracks;
+  } else if (["RED", "GOD"].includes(settings.perspective)) {
+    redTrajectories = redGroundTruth;
+  } else {
+    throw new Error("This part should never be reached!")
+  }
+
   return (
     <>
       <Gui
@@ -26,16 +35,26 @@ function App() {
         setIsPaused={setIsPaused}
         settings={settings}
         setSettings={setSettings}
-        friendlyRadars={blueSituationalPicture.friendly_radars}
-        friendlyTrackInitCoverages={blueTrackInitCoverages}
-        friendlyTrackUpdateCoverages={blueTrackUpdateCoverages}
-        enemyTrajectories={
-          settings.displayGroundTruth
-            ? redGroundTruth
-            : blueSituationalPicture.enemy_tracks
+        // TODO: Fill in RED perspective!
+        blueRadars={
+          ["BLUE", "GOD"].includes(settings.perspective)
+            ? blueSituationalPicture.friendly_radars
+            : []
         }
+        blueTrackInitCoverages={
+          ["BLUE", "GOD"].includes(settings.perspective)
+            ? blueTrackInitCoverages
+            : []
+        }
+        blueTrackUpdateCoverages={
+          ["BLUE", "GOD"].includes(settings.perspective)
+            ? blueTrackUpdateCoverages
+            : []
+        }
+        redTrajectories={redTrajectories}
         speedupFactor={speedupFactor}
         setSpeedupFactor={setSpeedupFactor}
+        perspective={"BLUE"}
       />
     </>
   );

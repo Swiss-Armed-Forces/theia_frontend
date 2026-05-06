@@ -1,4 +1,4 @@
-import type { Settings } from "../contexts/SettingsContext";
+import type { Perspective, Settings } from "../contexts/SettingsContext";
 import type {
   GeoJSONFeature,
   GroundTruth,
@@ -17,10 +17,10 @@ export default function Gui({
   setIsPaused,
   settings,
   setSettings,
-  friendlyRadars,
-  friendlyTrackInitCoverages,
-  friendlyTrackUpdateCoverages,
-  enemyTrajectories,
+  blueRadars,
+  blueTrackInitCoverages,
+  blueTrackUpdateCoverages,
+  redTrajectories,
   speedupFactor,
   setSpeedupFactor,
 }: {
@@ -29,22 +29,23 @@ export default function Gui({
   setIsPaused: (isPaused: boolean) => void;
   settings: Settings;
   setSettings: (settings: Settings) => void;
-  friendlyRadars: Sensor[];
-  friendlyTrackInitCoverages: GeoJSONFeature[];
-  friendlyTrackUpdateCoverages: GeoJSONFeature[];
-  enemyTrajectories: GroundTruth[] | Track[];
+  blueRadars: Sensor[];
+  blueTrackInitCoverages: GeoJSONFeature[];
+  blueTrackUpdateCoverages: GeoJSONFeature[];
+  redTrajectories: GroundTruth[] | Track[];
   speedupFactor: number;
   setSpeedupFactor: (n: number) => void;
+  perspective: Perspective;
 }) {
   const sidebarContent = (
     <SettingsForm settings={settings} setSettings={setSettings} />
   );
 
-  const friendlyMonostaticRadars = friendlyRadars.filter((sensor) =>
+  const blueMonostaticRadars = blueRadars.filter((sensor) =>
     arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
   );
 
-  const friendlyPclSensors = friendlyRadars.filter(
+  const bluePclSensors = blueRadars.filter(
     (sensor) =>
       !arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
   );
@@ -57,8 +58,8 @@ export default function Gui({
         setIsPaused={setIsPaused}
         speedupFactor={speedupFactor}
         setSpeedupFactor={setSpeedupFactor}
-        numberOfFriendlyRadars={friendlyRadars.length}
-        numberOfEnemyTargets={enemyTrajectories.length}
+        numberOfFriendlyRadars={blueRadars.length}
+        numberOfEnemyTargets={redTrajectories.length}
       />
 
       <div className="content">
@@ -67,11 +68,11 @@ export default function Gui({
           <RadarMap
             settings={settings}
             time={time}
-            blueMonostaticRadars={friendlyMonostaticRadars}
-            blueTrackInitCoverages={friendlyTrackInitCoverages}
-            blueTrackUpdateCoverages={friendlyTrackUpdateCoverages}
-            bluePclSensors={friendlyPclSensors}
-            redTrajectories={enemyTrajectories}
+            blueMonostaticRadars={blueMonostaticRadars}
+            blueTrackInitCoverages={blueTrackInitCoverages}
+            blueTrackUpdateCoverages={blueTrackUpdateCoverages}
+            bluePclSensors={bluePclSensors}
+            redTrajectories={redTrajectories}
           />
         </main>
       </div>
