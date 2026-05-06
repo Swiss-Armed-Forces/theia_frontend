@@ -1,12 +1,19 @@
 import {
   ESRI_SATELLITE_TILE_SERVER,
   OSM_TILE_SERVER,
-  type Settings,
-} from "../contexts/SettingsContext";
+  PERSPECTIVES,
+} from "../contexts/constants";
+import { type Perspective, type Settings } from "../contexts/SettingsContext";
 import type { LatLonHeightGrid } from "../hooks/useRadarData";
 import ButtonGroup from "./ButtonGroup";
 import GridDefinition from "./GridDefinition";
 import Switch from "./Switch";
+
+function isPerspective(value: unknown): value is Perspective {
+  return (
+    typeof value === "string" && PERSPECTIVES.includes(value as Perspective)
+  );
+}
 
 export default function SettingsForm({
   settings,
@@ -17,12 +24,14 @@ export default function SettingsForm({
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <div style={{
-            display: "flex",
-            flexDirection: "column",
-            alignContent: "center",
-            gap: 3,
-          }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignContent: "center",
+          gap: 3,
+        }}
+      >
         <span
           style={{
             display: "flex",
@@ -56,6 +65,16 @@ export default function SettingsForm({
           <span>Extrapolate Trajectory</span>
         </span>
       </div>
+      <ButtonGroup
+        options={PERSPECTIVES.map((p) => String(p))}
+        value={settings.perspective}
+        onChange={function (value: string): void {
+          if (!isPerspective(value)) {
+            throw new Error("Invalid Perspective!");
+          }
+          setSettings({ ...settings, perspective: value });
+        }}
+      />
       <ButtonGroup
         options={["Map" as const, "Satellite" as const]}
         value={settings.tileServerConfig.name}

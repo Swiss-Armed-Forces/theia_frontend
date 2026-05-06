@@ -1,7 +1,7 @@
 import { useState } from "react";
 import useRadarData from "./hooks/useRadarData";
-import { defaultSettings } from "./contexts/SettingsContext";
 import Gui from "./components/Gui";
+import { defaultSettings } from "./contexts/constants";
 
 function App() {
   const [settings, setSettings] = useState(defaultSettings);
