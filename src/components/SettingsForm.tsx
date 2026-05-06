@@ -16,28 +16,50 @@ export default function SettingsForm({
   setSettings: (settings: Settings) => void;
 }) {
   return (
-    <>
-      <Switch
-        on={settings.displayGroundTruth}
-        setOn={(on: boolean) => {
-          setSettings({ ...settings, displayGroundTruth: on });
-        }}
-      />
-      Display Ground Truth
-      <br />
-      <Switch
-        on={settings.extrapolate}
-        setOn={(on: boolean) => {
-          setSettings({ ...settings, extrapolate: on });
-        }}
-      />
-      Extrapolate Trajectory
-      <br />
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{
+            display: "flex",
+            flexDirection: "column",
+            alignContent: "center",
+            gap: 3,
+          }}>
+        <span
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignContent: "center",
+            gap: 5,
+          }}
+        >
+          <Switch
+            on={settings.displayGroundTruth}
+            setOn={(on: boolean) => {
+              setSettings({ ...settings, displayGroundTruth: on });
+            }}
+          />
+          <span>Display Ground Truth</span>
+        </span>
+        <span
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignContent: "center",
+            gap: 5,
+          }}
+        >
+          <Switch
+            on={settings.extrapolate}
+            setOn={(on: boolean) => {
+              setSettings({ ...settings, extrapolate: on });
+            }}
+          />
+          <span>Extrapolate Trajectory</span>
+        </span>
+      </div>
       <ButtonGroup
         options={["Map" as const, "Satellite" as const]}
         value={settings.tileServerConfig.name}
         onChange={function (value: string): void {
-          console.log("onChange()");
           if (value === "Map") {
             setSettings({ ...settings, tileServerConfig: OSM_TILE_SERVER });
           } else if (value === "Satellite") {
@@ -53,13 +75,12 @@ export default function SettingsForm({
       <GridDefinition
         grid={settings.pclCalcGrid}
         setGrid={(grid: LatLonHeightGrid) => {
-          console.log("SetPclGrid()", grid)
           setSettings({
             ...settings,
             pclCalcGrid: grid,
           });
         }}
       />
-    </>
+    </div>
   );
 }
