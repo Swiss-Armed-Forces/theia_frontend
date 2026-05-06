@@ -65,32 +65,42 @@ export default function SettingsForm({
           <span>Extrapolate Trajectory</span>
         </span>
       </div>
-      <ButtonGroup
-        options={PERSPECTIVES.map((p) => String(p))}
-        value={settings.perspective}
-        onChange={function (value: string): void {
-          if (!isPerspective(value)) {
-            throw new Error("Invalid Perspective!");
-          }
-          setSettings({ ...settings, perspective: value });
-        }}
-      />
-      <ButtonGroup
-        options={["Map" as const, "Satellite" as const]}
-        value={settings.tileServerConfig.name}
-        onChange={function (value: string): void {
-          if (value === "Map") {
-            setSettings({ ...settings, tileServerConfig: OSM_TILE_SERVER });
-          } else if (value === "Satellite") {
-            setSettings({
-              ...settings,
-              tileServerConfig: ESRI_SATELLITE_TILE_SERVER,
-            });
-          } else {
-            throw new Error("This part of the code should never be reached!");
-          }
-        }}
-      />
+      <fieldset
+        style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+      >
+        <legend>Perspective</legend>
+        <ButtonGroup
+          options={PERSPECTIVES.map((p) => String(p))}
+          value={settings.perspective}
+          onChange={function (value: string): void {
+            if (!isPerspective(value)) {
+              throw new Error("Invalid Perspective!");
+            }
+            setSettings({ ...settings, perspective: value });
+          }}
+        />
+      </fieldset>
+      <fieldset
+        style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+      >
+        <legend>Tiles</legend>
+        <ButtonGroup
+          options={["Map" as const, "Satellite" as const]}
+          value={settings.tileServerConfig.name}
+          onChange={function (value: string): void {
+            if (value === "Map") {
+              setSettings({ ...settings, tileServerConfig: OSM_TILE_SERVER });
+            } else if (value === "Satellite") {
+              setSettings({
+                ...settings,
+                tileServerConfig: ESRI_SATELLITE_TILE_SERVER,
+              });
+            } else {
+              throw new Error("This part of the code should never be reached!");
+            }
+          }}
+        />
+      </fieldset>
       <GridDefinition
         grid={settings.pclCalcGrid}
         setGrid={(grid: LatLonHeightGrid) => {
