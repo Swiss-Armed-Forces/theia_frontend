@@ -1,5 +1,34 @@
-import { CircleMarker, Polyline, Tooltip } from "react-leaflet";
-import type { GroundTruth, Track } from "../hooks/useRadarData";
+import { Marker, Polyline, Tooltip } from "react-leaflet";
+import type { GroundTruth, Point, Track } from "../hooks/useRadarData";
+import ms from "milsymbol";
+import L from "leaflet";
+import type { JSX } from "react";
+
+function TargetMarker({
+  children,
+  position,
+  sidc,
+}: {
+  children: JSX.Element;
+  position: Point;
+  sidc: string;
+}) {
+  const symbol = new ms.Symbol(sidc, {
+    size: 24,
+  });
+
+  const icon = L.divIcon({
+    html: symbol.asSVG(),
+    className: "", // remove default 'leaflet-div-icon' styles if needed
+    iconSize: [24, 24],
+    iconAnchor: [12, 12], // center the icon
+  });
+  return (
+    <Marker position={[position.lat, position.lon]} icon={icon}>
+      {children}
+    </Marker>
+  );
+}
 
 export default function TrajectoryLayer({
   trajectory,
@@ -83,15 +112,9 @@ export default function TrajectoryLayer({
       >
         {tooltip}
       </Polyline>
-      <CircleMarker
-        center={[currentPoint.lat, currentPoint.lon]}
-        radius={5}
-        color="red"
-        fillColor="red"
-        fillOpacity={100}
-      >
+      <TargetMarker position={currentPoint} sidc={trajectory.sidc}>
         {tooltip}
-      </CircleMarker>
+      </TargetMarker>
       <Polyline
         color={isBlue ? "blue" : "red"}
         positions={futurePoints.map((p) => [p.lat, p.lon])}

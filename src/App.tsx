@@ -24,7 +24,7 @@ function App() {
   } else if (["RED", "GOD"].includes(settings.perspective)) {
     redTrajectories = redGroundTruth;
   } else {
-    throw new Error("This part should never be reached!")
+    throw new Error("This part should never be reached!");
   }
 
   return (

@@ -231,6 +231,8 @@ export interface components {
             target_id: number;
             /** Points */
             points: components["schemas"]["TrackPoint"][];
+            /** Sidc */
+            sidc: string;
         };
         /** ExtrapolatedSituationalPicture */
         ExtrapolatedSituationalPicture: {
@@ -250,6 +252,10 @@ export interface components {
             id: string;
             /** Points */
             points: components["schemas"]["TrackPoint"][];
+            /** Sidc */
+            sidc: string;
+            receiver?: components["schemas"]["Receiver-Output"] | null;
+            transmitter?: components["schemas"]["Transmitter-Output"] | null;
         };
         /** GeoJSONFeature */
         GeoJSONFeature: {
@@ -350,8 +356,42 @@ export interface components {
             receiver: components["schemas"]["Receiver-Output"];
             error_model: components["schemas"]["MonostaticRadarMeasurementModel"];
         };
-        /** PclMeasurementModel */
-        PclMeasurementModel: Record<string, never>;
+        /**
+         * PclMeasurementModel
+         * @description Measurement model for PCL detections.
+         *
+         *     This model implements the Cramér-Rao Bound (CRB) of the uncertainty.
+         *
+         *     Notes
+         *     -----
+         *     This class implements Equ. (22) of the following article:
+         *     A. Quazi, "An overview on the time delay estimate in active and passive
+         *     systems for target localization,"
+         *     in IEEE Transactions on Acoustics, Speech, and Signal Processing,
+         *     vol. 29, no. 3, pp. 527-533, June 1981, doi: 10.1109/TASSP.1981.1163618.
+         */
+        PclMeasurementModel: {
+            /**
+             * Min Bistatic Range Uncertainty
+             * @default 0
+             */
+            min_bistatic_range_uncertainty: number;
+            /**
+             * Max Bistatic Range Uncertainty
+             * @default 10000
+             */
+            max_bistatic_range_uncertainty: number;
+            /**
+             * Min Doppler Uncertainty
+             * @default 0
+             */
+            min_doppler_uncertainty: number;
+            /**
+             * Max Doppler Uncertainty
+             * @default 10000
+             */
+            max_doppler_uncertainty: number;
+        };
         /** PclSensor */
         "PclSensor-Input": {
             /** Id */

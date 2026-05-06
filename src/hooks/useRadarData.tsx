@@ -35,7 +35,7 @@ const DEFAULT_SITUATIONAL_PICTURE: SituationalPicture = {
   friendly_radars: [],
   enemy_tracks: [],
 };
-const DEFAULT_GROUND_TRUTH: GroundTruth = { target_id: -1, points: [] };
+const DEFAULT_GROUND_TRUTH: GroundTruth = { target_id: -1, points: [], sidc: "10060100001101000000" };
 
 function generateTimeWindow(
   time: Date,
