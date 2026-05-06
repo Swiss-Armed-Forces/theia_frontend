@@ -41,22 +41,6 @@ export default function SettingsForm({
           }}
         >
           <Switch
-            on={settings.displayGroundTruth}
-            setOn={(on: boolean) => {
-              setSettings({ ...settings, displayGroundTruth: on });
-            }}
-          />
-          <span>Display Ground Truth</span>
-        </span>
-        <span
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            alignContent: "center",
-            gap: 5,
-          }}
-        >
-          <Switch
             on={settings.extrapolate}
             setOn={(on: boolean) => {
               setSettings({ ...settings, extrapolate: on });

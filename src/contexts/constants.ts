@@ -35,7 +35,6 @@ export const defaultSettings: Settings = {
   nHeightBins: 31,
   coverageAlt: 1000,
   coverageAzimuthResDegree: 2,
-  displayGroundTruth: false,
   extrapolate: false,
   primaryMuted: "#7ba7e4",
   primaryBackground: "#0F172A",
