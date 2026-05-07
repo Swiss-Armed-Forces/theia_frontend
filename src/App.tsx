@@ -9,9 +9,11 @@ function App() {
   const {
     time,
     blueSituationalPicture,
+    redSituationalPicture,
     redGroundTruth,
     blueTrackInitCoverages,
     blueTrackUpdateCoverages,
+    blueGroundTruth,
     isPaused,
     setIsPaused,
     speedupFactor,
@@ -23,6 +25,15 @@ function App() {
     redTrajectories = blueSituationalPicture.enemy_tracks;
   } else if (["RED", "GOD"].includes(settings.perspective)) {
     redTrajectories = redGroundTruth;
+  } else {
+    throw new Error("This part should never be reached!");
+  }
+
+  let blueTrajectories = [];
+  if (settings.perspective === "RED") {
+    blueTrajectories = redSituationalPicture.enemy_tracks;
+  } else if (["BLUE", "GOD"].includes(settings.perspective)) {
+    blueTrajectories = blueGroundTruth;
   } else {
     throw new Error("This part should never be reached!");
   }
@@ -51,6 +62,7 @@ function App() {
             ? blueTrackUpdateCoverages
             : []
         }
+        blueTrajectories={blueTrajectories}
         redTrajectories={redTrajectories}
         speedupFactor={speedupFactor}
         setSpeedupFactor={setSpeedupFactor}

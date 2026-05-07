@@ -35,7 +35,11 @@ const DEFAULT_SITUATIONAL_PICTURE: SituationalPicture = {
   friendly_radars: [],
   enemy_tracks: [],
 };
-const DEFAULT_GROUND_TRUTH: GroundTruth = { target_id: -1, points: [], sidc: "10060100001101000000" };
+const DEFAULT_GROUND_TRUTH: GroundTruth = {
+  target_id: -1,
+  points: [],
+  sidc: "10060100001101000000",
+};
 
 function generateTimeWindow(
   time: Date,
@@ -54,16 +58,28 @@ export default function useRadarData(extrapolate: boolean) {
   const [time, setTime] = useState(new Date("2022-06-27T23:01:40"));
   const [isPaused, setIsPaused] = useState(true);
   const [speedupFactor, setSpeedupFactor] = useState(1);
+  const [blueGroundTruth, setBlueGroundTruth] = useState([
+    DEFAULT_GROUND_TRUTH,
+  ] as GroundTruth[]);
   const [redGroundTruth, setRedGroundTruth] = useState([
     DEFAULT_GROUND_TRUTH,
   ] as GroundTruth[]);
   const [blueSituationalPicture, setBlueSituationalPicture] = useState(
     DEFAULT_SITUATIONAL_PICTURE,
   );
+  const [redSituationalPicture, setRedSituationalPicture] = useState(
+    DEFAULT_SITUATIONAL_PICTURE,
+  );
   const [blueTrackInitCoverages, setBlueTrackInitCoverages] = useState(
     [] as GeoJSONFeature[],
   );
   const [blueTrackUpdateCoverages, setBlueTrackUpdateCoverages] = useState(
+    [] as GeoJSONFeature[],
+  );
+  const [redTrackInitCoverages, setRedTrackInitCoverages] = useState(
+    [] as GeoJSONFeature[],
+  );
+  const [redTrackUpdateCoverages, setRedTrackUpdateCoverages] = useState(
     [] as GeoJSONFeature[],
   );
 
@@ -75,47 +91,64 @@ export default function useRadarData(extrapolate: boolean) {
   // const time = new Date("2022-06-27T23:01:40");
 
   useEffect(() => {
-    const monostaticSensors = blueSituationalPicture.friendly_radars.filter(
-      (sensor) =>
-        arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
-    ) as MonostaticSensor[];
-    const pclSensors = blueSituationalPicture.friendly_radars.filter(
-      (sensor) =>
-        !arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
-    ) as PclSensor[];
-    Promise.all([
-      Promise.all(
-        monostaticSensors.map((radar) =>
-          calculateMonostaticCoverage(
-            radar,
-            settings.coverageAlt,
-            settings.coverageAzimuthResDegree,
+    for (const [
+      situationalPicture,
+      setTrackInitCoverages,
+      setTrackUpdateCoverages,
+    ] of [
+      [
+        blueSituationalPicture,
+        setBlueTrackInitCoverages,
+        setBlueTrackUpdateCoverages,
+      ],
+      [
+        redSituationalPicture,
+        setRedTrackInitCoverages,
+        setRedTrackUpdateCoverages,
+      ],
+    ] as [
+      SituationalPicture,
+      (features: GeoJSONFeature[]) => void,
+      (features: GeoJSONFeature[]) => void,
+    ][]) {
+      const monostaticSensors = situationalPicture.friendly_radars.filter(
+        (sensor) =>
+          arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
+      ) as MonostaticSensor[];
+      const pclSensors = blueSituationalPicture.friendly_radars.filter(
+        (sensor) =>
+          !arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
+      ) as PclSensor[];
+      Promise.all([
+        Promise.all(
+          monostaticSensors.map((radar) =>
+            calculateMonostaticCoverage(
+              radar,
+              settings.coverageAlt,
+              settings.coverageAzimuthResDegree,
+            ),
           ),
         ),
-      ),
-      calculatePclCoverage(
-        pclSensors,
-        DEFAULT_PCL_RCS,
-        settings.pclCalcGrid,
-      ),
-    ]).then(([monostaticCoverages, pclCoverages]) => {
-      const trackInitFeatures = monostaticCoverages;
-      if (pclCoverages.length != 2) {
-        throw Error("Expected 2")
-      }
-      if (pclCoverages[0].geometry.coordinates.length > 0) {
-        trackInitFeatures.push(pclCoverages[0]);
-      }
-      const trackUpdateFeatures =
-        pclCoverages[1].geometry.coordinates.length > 0
-          ? [pclCoverages[1]]
-          : [];
+        calculatePclCoverage(pclSensors, DEFAULT_PCL_RCS, settings.pclCalcGrid),
+      ]).then(([monostaticCoverages, pclCoverages]) => {
+        const trackInitFeatures = monostaticCoverages;
+        if (pclCoverages.length != 2) {
+          throw Error("Expected 2");
+        }
+        if (pclCoverages[0].geometry.coordinates.length > 0) {
+          trackInitFeatures.push(pclCoverages[0]);
+        }
+        const trackUpdateFeatures =
+          pclCoverages[1].geometry.coordinates.length > 0
+            ? [pclCoverages[1]]
+            : [];
 
-      // Track init mask.
-      setBlueTrackInitCoverages(trackInitFeatures);
-      setBlueTrackUpdateCoverages(trackUpdateFeatures);
-    });
-  }, [blueSituationalPicture, settings]);
+        // Track init mask.
+        setTrackInitCoverages(trackInitFeatures);
+        setTrackUpdateCoverages(trackUpdateFeatures);
+      });
+    }
+  }, [blueSituationalPicture, redSituationalPicture, settings]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -136,8 +169,14 @@ export default function useRadarData(extrapolate: boolean) {
     fetchSituationalPicture(times, true).then((situationalPicture) =>
       setBlueSituationalPicture(situationalPicture),
     );
+    fetchSituationalPicture(times, false).then((situationalPicture) =>
+      setRedSituationalPicture(situationalPicture),
+    );
     fetchGroundTruth(times, false).then((groundTruths) =>
       setRedGroundTruth(groundTruths),
+    );
+    fetchGroundTruth(times, true).then((groundTruths) =>
+      setBlueGroundTruth(groundTruths),
     );
     fetchSpeedupFactor().then((factor) => setSpeedupFactor(factor));
   }, [time, secondsInFuture]);
@@ -145,9 +184,13 @@ export default function useRadarData(extrapolate: boolean) {
   return {
     time,
     blueSituationalPicture,
-    redGroundTruth,
+    blueGroundTruth,
     blueTrackInitCoverages,
     blueTrackUpdateCoverages,
+    redSituationalPicture,
+    redTrackInitCoverages,
+    redTrackUpdateCoverages,
+    redGroundTruth,
     isPaused,
     setIsPaused: postIsPaused,
     speedupFactor,
@@ -159,11 +202,9 @@ async function fetchSituationalPicture(
   times: Date[],
   isBlue: boolean,
 ): Promise<SituationalPicture> {
-  if (!isBlue) {
-    throw new Error("No implemented yet");
-  }
+  const team = isBlue ? "BLUE" : "RED";
 
-  const response = await fetch(`${BASE_URL}/situational_picture/BLUE`, {
+  const response = await fetch(`${BASE_URL}/situational_picture/${team}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(times.map((t) => t.toISOString())),
@@ -251,11 +292,9 @@ async function fetchGroundTruth(
   times: Date[],
   isBlue: boolean,
 ): Promise<GroundTruth[]> {
-  if (isBlue) {
-    throw new Error("No implemented yet");
-  }
+  const team = isBlue ? "BLUE" : "RED";
 
-  const response = await fetch(`${BASE_URL}/ground_truth/RED`, {
+  const response = await fetch(`${BASE_URL}/ground_truth/${team}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(times.map((t) => t.toISOString())),

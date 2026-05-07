@@ -20,6 +20,7 @@ export default function Gui({
   blueRadars,
   blueTrackInitCoverages,
   blueTrackUpdateCoverages,
+  blueTrajectories,
   redTrajectories,
   speedupFactor,
   setSpeedupFactor,
@@ -32,6 +33,7 @@ export default function Gui({
   blueRadars: Sensor[];
   blueTrackInitCoverages: GeoJSONFeature[];
   blueTrackUpdateCoverages: GeoJSONFeature[];
+  blueTrajectories: GroundTruth[] | Track[];
   redTrajectories: GroundTruth[] | Track[];
   speedupFactor: number;
   setSpeedupFactor: (n: number) => void;
@@ -49,6 +51,10 @@ export default function Gui({
     (sensor) =>
       !arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
   );
+
+  // TODO
+  const trajectories = redTrajectories.concat(blueTrajectories) as (GroundTruth | Track)[];
+  console.log("Trajcetories", redTrajectories, blueTrajectories, trajectories)
 
   return (
     <div className="app">
@@ -72,7 +78,7 @@ export default function Gui({
             blueTrackInitCoverages={blueTrackInitCoverages}
             blueTrackUpdateCoverages={blueTrackUpdateCoverages}
             bluePclSensors={bluePclSensors}
-            redTrajectories={redTrajectories}
+            trajectories={trajectories}
           />
         </main>
       </div>

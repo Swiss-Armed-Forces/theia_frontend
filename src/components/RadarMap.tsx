@@ -23,7 +23,7 @@ export default function RadarMap({
   bluePclSensors,
   blueTrackInitCoverages,
   blueTrackUpdateCoverages,
-  redTrajectories,
+  trajectories,
 }: {
   settings: Settings;
   time: Date;
@@ -31,7 +31,7 @@ export default function RadarMap({
   bluePclSensors: Sensor[];
   blueTrackInitCoverages: GeoJSONFeature[];
   blueTrackUpdateCoverages: GeoJSONFeature[];
-  redTrajectories: GroundTruth[] | Track[];
+  trajectories: (GroundTruth | Track)[];
 }) {
   const mapRef = useRef(null as Map | null);
   const [visibleAltRange, setVisibleAltRange] = useState<[number, number]>([
@@ -39,11 +39,10 @@ export default function RadarMap({
     settings.maxHeight,
   ]);
 
-  const visibleRedTrajectories = redTrajectories.filter((trajectory) => {
+  const visibleTrajectories = trajectories.filter((trajectory) => {
     const alt = extractState(time, trajectory).alt;
     return visibleAltRange[0] <= alt && alt <= visibleAltRange[1];
   });
-  // const visibleRedTrajectories = redTrajectories;
 
   const monostaticRadarMarkers = blueMonostaticRadars.map((radar, i) => (
     <MonostaticRadarMarker
@@ -57,7 +56,7 @@ export default function RadarMap({
   const pclSensorMarkers = bluePclSensors.map((sensor, i) => (
     <PclSensorMarkers key={i} sensor={sensor} />
   ));
-  const groundTruthLayers = visibleRedTrajectories.map((trajectory) => (
+  const groundTruthLayers = visibleTrajectories.map((trajectory) => (
     <TrajectoryLayer
       key={"id" in trajectory ? parseInt(trajectory.id) : trajectory.target_id}
       trajectory={trajectory}
@@ -117,7 +116,7 @@ export default function RadarMap({
       <IntervalSelector
         selectedRange={visibleAltRange}
         setSelectedRange={setVisibleAltRange}
-        values={redTrajectories.map(
+        values={trajectories.map(
           (trajectory) => extractState(time, trajectory).alt,
         )}
         range={[settings.minHeight, settings.maxHeight]}
