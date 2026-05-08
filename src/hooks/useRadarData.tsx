@@ -117,6 +117,7 @@ export default function useRadarData(extrapolate: boolean) {
               radar,
               settings.coverageAlt,
               settings.coverageAzimuthResDegree,
+              settings.coverageRangeOnly,
             ),
           ),
         ),
@@ -305,6 +306,7 @@ const calculateMonostaticCoverage = memoize(
     radar: MonostaticSensor,
     target_alt: number,
     rcs: number,
+    range_only: boolean,
     probability_threshold: number = 0.8,
     azimuth_resolution_degree: number = 2.0,
   ): Promise<GeoJSONFeature> => {
@@ -313,6 +315,7 @@ const calculateMonostaticCoverage = memoize(
       rcs: String(rcs),
       probability_threshold: String(probability_threshold),
       azimuth_resolution_degree: String(azimuth_resolution_degree),
+      range_only: String(range_only),
     });
     const res = await fetch(
       `${BASE_URL}/calculate_monostatic_coverage?${query}`,

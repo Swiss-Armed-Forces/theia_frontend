@@ -10,6 +10,7 @@ export type Settings = {
   nHeightBins: number;
   coverageAlt: number;
   coverageAzimuthResDegree: number;
+  coverageRangeOnly: boolean;
   extrapolate: boolean;
   primaryMuted: string;
   primaryBackground: string;
