@@ -13,11 +13,10 @@ import TrajectoryLayer from "./TrajectoryLayer";
 import ClickPopup from "./ClickPopup";
 import { extractState } from "../util/utils";
 import IntervalSelector from "./IntervalSelector";
-import type { Settings } from "../contexts/SettingsContext";
+import { useSettings } from "../contexts/SettingsContext";
 import type { LineString } from "geojson";
 
 export default function RadarMap({
-  settings,
   time,
   blueMonostaticRadars,
   bluePclSensors,
@@ -27,7 +26,6 @@ export default function RadarMap({
   redTrackUpdateCoverages,
   trajectories,
 }: {
-  settings: Settings;
   time: Date;
   blueMonostaticRadars: Sensor[];
   bluePclSensors: Sensor[];
@@ -37,6 +35,7 @@ export default function RadarMap({
   redTrackUpdateCoverages: GeoJSONFeature[];
   trajectories: (GroundTruth | Track)[];
 }) {
+  const { settings } = useSettings();
   const mapRef = useRef(null as Map | null);
   const [visibleAltRange, setVisibleAltRange] = useState<[number, number]>([
     settings.minHeight,

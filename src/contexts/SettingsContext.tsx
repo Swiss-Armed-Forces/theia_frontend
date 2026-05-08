@@ -1,4 +1,4 @@
-import { createContext } from "react";
+import { createContext, useContext } from "react";
 import type { LatLonHeightGrid } from "../hooks/useRadarData";
 import { defaultSettings, type PERSPECTIVES } from "./constants";
 
@@ -31,7 +31,7 @@ type TileServerConfig = {
   attribution: string;
 };
 
-export type SettingsContextType = {
+type SettingsContextType = {
   settings: Settings;
   updateSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
 };
@@ -41,3 +41,5 @@ export const SettingsContext = createContext<SettingsContextType>({
   settings: defaultSettings,
   updateSetting: () => {}, // no-op default
 });
+
+export const useSettings = () => useContext(SettingsContext);

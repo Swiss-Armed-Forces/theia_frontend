@@ -7,6 +7,7 @@ import memoize from "memoizee";
 import stringify from "fast-json-stable-stringify";
 import { useSettings } from "./useSettings";
 import { arePointsEqual } from "../util/utils";
+import type { Perspective } from "../contexts/SettingsContext";
 // import createFetchClient from "openapi-fetch";
 // import createClient from "openapi-react-query";
 
@@ -21,6 +22,17 @@ export type Track = components["schemas"]["ExtrapolatedTrack"];
 export type GroundTruth = components["schemas"]["ExtrapolatedGroundtruth"];
 export type LatLonHeightGrid = components["schemas"]["LatLonHeightGrid"];
 export type Sensor = MonostaticSensor | PclSensor;
+
+export type DisplayData = {
+  blueRadars: (MonostaticSensor | PclSensor)[];
+  blueTargets: Track[] | GroundTruth[];
+  blueTrackInitCoverages: GeoJSONFeature[];
+  blueTrackUpdateCoverages: GeoJSONFeature[];
+  redRadars: Sensor[];
+  redTargets: Track[] | GroundTruth[];
+  redTrackInitCoverages: GeoJSONFeature[];
+  redTrackUpdateCoverages: GeoJSONFeature[];
+};
 
 const DEFAULT_PCL_RCS = 1.0;
 
@@ -173,20 +185,87 @@ export default function useRadarData(extrapolate: boolean) {
     fetchSpeedupFactor().then((factor) => setSpeedupFactor(factor));
   }, [time, secondsInFuture]);
 
-  return {
-    time,
+  // Summarize the data to be displayed.
+  const displayData = buildDisplayData(
+    settings.perspective,
     blueSituationalPicture,
     blueGroundTruth,
     blueTrackInitCoverages,
     blueTrackUpdateCoverages,
     redSituationalPicture,
+    redGroundTruth,
     redTrackInitCoverages,
     redTrackUpdateCoverages,
-    redGroundTruth,
+  );
+
+  return {
+    time,
+    displayData,
     isPaused,
     setIsPaused: postIsPaused,
     speedupFactor,
     setSpeedupFactor: postSpeedup,
+  };
+}
+
+function buildDisplayData(
+  perspective: Perspective,
+  blueSituationalPicture: SituationalPicture,
+  blueGroundTruth: GroundTruth[],
+  blueTrackInitCoverages: GeoJSONFeature[],
+  blueTrackUpdateCoverages: GeoJSONFeature[],
+  redSituationalPicture: SituationalPicture,
+  redGroundTruth: GroundTruth[],
+  redTrackInitCoverages: GeoJSONFeature[],
+  redTrackUpdateCoverages: GeoJSONFeature[],
+): DisplayData {
+  let blueTrajectories = [];
+  if (perspective === "RED") {
+    blueTrajectories = redSituationalPicture.enemy_tracks;
+  } else if (["BLUE", "GOD"].includes(perspective)) {
+    blueTrajectories = blueGroundTruth;
+  } else {
+    throw new Error("This part should never be reached!");
+  }
+  const blueRadars = ["BLUE", "GOD"].includes(perspective)
+    ? blueSituationalPicture.friendly_radars
+    : [];
+
+  const displayBlueTrackInitCoverages = ["BLUE", "GOD"].includes(perspective)
+    ? blueTrackInitCoverages
+    : [];
+  const displayBlueTrackUpdateCoverages = ["BLUE", "GOD"].includes(perspective)
+    ? blueTrackUpdateCoverages
+    : [];
+
+  let redTrajectories = [] as Track[] | GroundTruth[];
+  if (perspective === "BLUE") {
+    redTrajectories = blueSituationalPicture.enemy_tracks;
+  } else if (["RED", "GOD"].includes(perspective)) {
+    redTrajectories = redGroundTruth;
+  } else {
+    throw new Error("This part should never be reached!");
+  }
+  const redRadars = ["RED", "GOD"].includes(perspective)
+    ? blueSituationalPicture.friendly_radars
+    : [];
+
+  const displayRedTrackInitCoverages = ["RED", "GOD"].includes(perspective)
+    ? redTrackInitCoverages
+    : [];
+  const displayRedTrackUpdateCoverages = ["RED", "GOD"].includes(perspective)
+    ? redTrackUpdateCoverages
+    : [];
+
+  return {
+    blueRadars: blueRadars,
+    blueTargets: blueTrajectories,
+    blueTrackInitCoverages: displayBlueTrackInitCoverages,
+    blueTrackUpdateCoverages: displayBlueTrackUpdateCoverages,
+    redRadars: redRadars,
+    redTargets: redTrajectories,
+    redTrackInitCoverages: displayRedTrackInitCoverages,
+    redTrackUpdateCoverages: displayRedTrackUpdateCoverages,
   };
 }
 

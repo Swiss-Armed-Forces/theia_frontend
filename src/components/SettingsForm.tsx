@@ -3,7 +3,7 @@ import {
   OSM_TILE_SERVER,
   PERSPECTIVES,
 } from "../contexts/constants";
-import { type Perspective, type Settings } from "../contexts/SettingsContext";
+import { useSettings, type Perspective } from "../contexts/SettingsContext";
 import type { LatLonHeightGrid } from "../hooks/useRadarData";
 import ButtonGroup from "./ButtonGroup";
 import GridDefinition from "./GridDefinition";
@@ -15,13 +15,8 @@ function isPerspective(value: unknown): value is Perspective {
   );
 }
 
-export default function SettingsForm({
-  settings,
-  setSettings,
-}: {
-  settings: Settings;
-  setSettings: (settings: Settings) => void;
-}) {
+export default function SettingsForm() {
+  const { settings, updateSetting } = useSettings();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <div
@@ -43,7 +38,7 @@ export default function SettingsForm({
           <Switch
             on={settings.extrapolate}
             setOn={(on: boolean) => {
-              setSettings({ ...settings, extrapolate: on });
+              updateSetting("extrapolate", on);
             }}
           />
           <span>Extrapolate Trajectory</span>
@@ -60,7 +55,7 @@ export default function SettingsForm({
             if (!isPerspective(value)) {
               throw new Error("Invalid Perspective!");
             }
-            setSettings({ ...settings, perspective: value });
+            updateSetting("perspective", value);
           }}
         />
       </fieldset>
@@ -73,12 +68,9 @@ export default function SettingsForm({
           value={settings.tileServerConfig.name}
           onChange={function (value: string): void {
             if (value === "Map") {
-              setSettings({ ...settings, tileServerConfig: OSM_TILE_SERVER });
+              updateSetting("tileServerConfig", OSM_TILE_SERVER);
             } else if (value === "Satellite") {
-              setSettings({
-                ...settings,
-                tileServerConfig: ESRI_SATELLITE_TILE_SERVER,
-              });
+              updateSetting("tileServerConfig", ESRI_SATELLITE_TILE_SERVER);
             } else {
               throw new Error("This part of the code should never be reached!");
             }
@@ -108,7 +100,7 @@ export default function SettingsForm({
             <Switch
               on={settings.coverageRangeOnly}
               setOn={(on: boolean) => {
-                setSettings({ ...settings, coverageRangeOnly: on });
+                updateSetting("coverageRangeOnly", on);
               }}
             />
             <span>Range only</span>
@@ -118,10 +110,7 @@ export default function SettingsForm({
       <GridDefinition
         grid={settings.pclCalcGrid}
         setGrid={(grid: LatLonHeightGrid) => {
-          setSettings({
-            ...settings,
-            pclCalcGrid: grid,
-          });
+          updateSetting("pclCalcGrid", grid);
         }}
       />
     </div>
