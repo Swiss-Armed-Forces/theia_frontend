@@ -21,6 +21,8 @@ export default function Gui({
   blueTrackInitCoverages,
   blueTrackUpdateCoverages,
   blueTrajectories,
+  redTrackInitCoverages,
+  redTrackUpdateCoverages,
   redTrajectories,
   speedupFactor,
   setSpeedupFactor,
@@ -34,6 +36,8 @@ export default function Gui({
   blueTrackInitCoverages: GeoJSONFeature[];
   blueTrackUpdateCoverages: GeoJSONFeature[];
   blueTrajectories: GroundTruth[] | Track[];
+  redTrackInitCoverages: GeoJSONFeature[];
+  redTrackUpdateCoverages: GeoJSONFeature[];
   redTrajectories: GroundTruth[] | Track[];
   speedupFactor: number;
   setSpeedupFactor: (n: number) => void;
@@ -74,7 +78,9 @@ export default function Gui({
             time={time}
             blueMonostaticRadars={blueMonostaticRadars}
             blueTrackInitCoverages={blueTrackInitCoverages}
-            blueTrackUpdateCoverages={blueTrackUpdateCoverages}
+            blueTrackUpdateCoverages={redTrackUpdateCoverages}
+            redTrackInitCoverages={redTrackInitCoverages}
+            redTrackUpdateCoverages={blueTrackUpdateCoverages}
             bluePclSensors={bluePclSensors}
             trajectories={trajectories}
           />

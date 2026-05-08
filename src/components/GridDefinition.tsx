@@ -10,7 +10,7 @@ export default function GridDefinition({
 }) {
   return (
     <fieldset style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      <legend>PCL calculation grid</legend>
+      <legend>PCL coverage calculation grid</legend>
       <label>
         {"Minimum (lat, lon) [°]"}
         <input

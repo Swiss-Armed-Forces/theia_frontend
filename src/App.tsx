@@ -13,6 +13,8 @@ function App() {
     redGroundTruth,
     blueTrackInitCoverages,
     blueTrackUpdateCoverages,
+    redTrackInitCoverages,
+    redTrackUpdateCoverages,
     blueGroundTruth,
     isPaused,
     setIsPaused,
@@ -60,6 +62,16 @@ function App() {
         blueTrackUpdateCoverages={
           ["BLUE", "GOD"].includes(settings.perspective)
             ? blueTrackUpdateCoverages
+            : []
+        }
+        redTrackInitCoverages={
+          ["RED", "GOD"].includes(settings.perspective)
+            ? redTrackInitCoverages
+            : []
+        }
+        redTrackUpdateCoverages={
+          ["RED", "GOD"].includes(settings.perspective)
+            ? redTrackUpdateCoverages
             : []
         }
         blueTrajectories={blueTrajectories}

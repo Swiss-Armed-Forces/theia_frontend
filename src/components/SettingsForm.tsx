@@ -85,6 +85,36 @@ export default function SettingsForm({
           }}
         />
       </fieldset>
+      <fieldset
+        style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+      >
+        <legend>RAD coverage calculation</legend>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignContent: "center",
+            gap: 3,
+          }}
+        >
+          <span
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignContent: "center",
+              gap: 5,
+            }}
+          >
+            <Switch
+              on={settings.coverageRangeOnly}
+              setOn={(on: boolean) => {
+                setSettings({ ...settings, coverageRangeOnly: on });
+              }}
+            />
+            <span>Range only</span>
+          </span>
+        </div>
+      </fieldset>
       <GridDefinition
         grid={settings.pclCalcGrid}
         setGrid={(grid: LatLonHeightGrid) => {

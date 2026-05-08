@@ -23,6 +23,8 @@ export default function RadarMap({
   bluePclSensors,
   blueTrackInitCoverages,
   blueTrackUpdateCoverages,
+  redTrackInitCoverages,
+  redTrackUpdateCoverages,
   trajectories,
 }: {
   settings: Settings;
@@ -31,6 +33,8 @@ export default function RadarMap({
   bluePclSensors: Sensor[];
   blueTrackInitCoverages: GeoJSONFeature[];
   blueTrackUpdateCoverages: GeoJSONFeature[];
+  redTrackInitCoverages: GeoJSONFeature[];
+  redTrackUpdateCoverages: GeoJSONFeature[];
   trajectories: (GroundTruth | Track)[];
 }) {
   const mapRef = useRef(null as Map | null);
@@ -65,7 +69,7 @@ export default function RadarMap({
     />
   ));
 
-  const trackUpdateCoverageLayers = blueTrackUpdateCoverages.map(
+  const blueTrackUpdateCoverageLayers = blueTrackUpdateCoverages.map(
     (coverage, i) => (
       <GeoJSON
         key={i}
@@ -75,9 +79,29 @@ export default function RadarMap({
       />
     ),
   );
-  const trackInitCoverageLayers = blueTrackInitCoverages.map((coverage, i) => (
-    <GeoJSON key={i} data={coverage} interactive={false} />
-  ));
+  const blueTrackInitCoverageLayers = blueTrackInitCoverages.map(
+    (coverage, i) => <GeoJSON key={i} data={coverage} interactive={false} />,
+  );
+  const redTrackUpdateCoverageLayers = redTrackUpdateCoverages.map(
+    (coverage, i) => (
+      <GeoJSON
+        key={i}
+        data={coverage}
+        interactive={false}
+        style={{ color: "red" }}
+      />
+    ),
+  );
+  const redTrackInitCoverageLayers = redTrackInitCoverages.map(
+    (coverage, i) => (
+      <GeoJSON
+        key={i}
+        data={coverage}
+        interactive={false}
+        style={{ color: "orange" }}
+      />
+    ),
+  );
 
   const calcGridLayer = (
     <GeoJSON
@@ -137,8 +161,10 @@ export default function RadarMap({
           url={settings.tileServerConfig.url}
           subdomains={["a", "b", "c"]}
         />
-        {trackUpdateCoverageLayers}
-        {trackInitCoverageLayers}
+        {blueTrackUpdateCoverageLayers}
+        {blueTrackInitCoverageLayers}
+        {redTrackUpdateCoverageLayers}
+        {redTrackInitCoverageLayers}
         {monostaticRadarMarkers}
         {pclSensorMarkers}
         {groundTruthLayers}
