@@ -35,11 +35,6 @@ const DEFAULT_SITUATIONAL_PICTURE: SituationalPicture = {
   friendly_radars: [],
   enemy_tracks: [],
 };
-const DEFAULT_GROUND_TRUTH: GroundTruth = {
-  target_id: -1,
-  points: [],
-  sidc: "10060100001101000000",
-};
 
 function generateTimeWindow(
   time: Date,
@@ -58,12 +53,8 @@ export default function useRadarData(extrapolate: boolean) {
   const [time, setTime] = useState(new Date("2022-06-27T23:01:40"));
   const [isPaused, setIsPaused] = useState(true);
   const [speedupFactor, setSpeedupFactor] = useState(1);
-  const [blueGroundTruth, setBlueGroundTruth] = useState([
-    DEFAULT_GROUND_TRUTH,
-  ] as GroundTruth[]);
-  const [redGroundTruth, setRedGroundTruth] = useState([
-    DEFAULT_GROUND_TRUTH,
-  ] as GroundTruth[]);
+  const [blueGroundTruth, setBlueGroundTruth] = useState([] as GroundTruth[]);
+  const [redGroundTruth, setRedGroundTruth] = useState([] as GroundTruth[]);
   const [blueSituationalPicture, setBlueSituationalPicture] = useState(
     DEFAULT_SITUATIONAL_PICTURE,
   );

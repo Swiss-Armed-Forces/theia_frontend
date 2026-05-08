@@ -52,9 +52,7 @@ export default function Gui({
       !arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
   );
 
-  // TODO
-  const trajectories = redTrajectories.concat(blueTrajectories) as (GroundTruth | Track)[];
-  console.log("Trajcetories", redTrajectories, blueTrajectories, trajectories)
+  const trajectories = redTrajectories.concat(blueTrajectories);
 
   return (
     <div className="app">
