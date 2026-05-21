@@ -4,11 +4,11 @@ import type { Settings } from "./SettingsContext";
 export const PERSPECTIVES = ["BLUE", "RED", "GOD"] as const;
 
 export const DEFAULT_PCL_COVERAGE_GRID: LatLonHeightGrid = {
-  lat_start: 46.89586,
-  lat_stop: 47.11407,
+  lat_start: 46.88835,
+  lat_stop:  47.69682,
   lat_res: 0.01,
-  lon_start: 8.15612,
-  lon_stop: 8.61887,
+  lon_start: 7.46548,
+  lon_stop: 8.76724,
   lon_res: 0.01,
   height_start: 1000.0,
   height_stop: 1000.0,

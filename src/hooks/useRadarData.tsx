@@ -86,7 +86,7 @@ export default function useRadarData(extrapolate: boolean) {
     [] as GeoJSONFeature[],
   );
 
-  const secondsInPast = 60;
+  const secondsInPast = 1;
   const secondsInFuture = extrapolate ? 60 : 0;
 
   const refreshPeriodSeconds = 1;
