@@ -49,9 +49,9 @@ export default function Gui() {
             time={time}
             blueMonostaticRadars={blueMonostaticRadars}
             blueTrackInitCoverages={displayData.blueTrackInitCoverages}
-            blueTrackUpdateCoverages={displayData.redTrackUpdateCoverages}
+            blueTrackUpdateCoverages={displayData.blueTrackUpdateCoverages}
             redTrackInitCoverages={displayData.redTrackInitCoverages}
-            redTrackUpdateCoverages={displayData.blueTrackUpdateCoverages}
+            redTrackUpdateCoverages={displayData.redTrackUpdateCoverages}
             bluePclSensors={bluePclSensors}
             trajectories={trajectories}
           />

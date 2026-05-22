@@ -119,7 +119,7 @@ export default function useRadarData(extrapolate: boolean) {
         (sensor) =>
           arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
       ) as MonostaticSensor[];
-      const pclSensors = blueSituationalPicture.friendly_radars.filter(
+      const pclSensors = situationalPicture.friendly_radars.filter(
         (sensor) =>
           !arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
       ) as PclSensor[];
