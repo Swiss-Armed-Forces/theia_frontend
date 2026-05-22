@@ -29,6 +29,11 @@ export const ESRI_SATELLITE_TILE_SERVER = {
     "Powered by Esri | Esri, Vantor, Earthstar Geographics, and the GIS User Community",
 };
 
+export const SIDC = {
+  BLUE_RADAR: "10231500002203000000",
+  GREEN_TRANSMITTER: "10242000001212010000",
+}
+
 export const defaultSettings: Settings = {
   minHeight: 0,
   maxHeight: 15000,

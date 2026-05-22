@@ -8,6 +8,7 @@ import stringify from "fast-json-stable-stringify";
 import { useSettings } from "./useSettings";
 import { arePointsEqual } from "../util/utils";
 import type { Perspective } from "../contexts/SettingsContext";
+import { SIDC } from "../contexts/constants";
 // import createFetchClient from "openapi-fetch";
 // import createClient from "openapi-react-query";
 
@@ -223,7 +224,9 @@ function buildDisplayData(
   if (perspective === "RED") {
     blueTrajectories = redSituationalPicture.enemy_tracks;
   } else if (["BLUE", "GOD"].includes(perspective)) {
-    blueTrajectories = blueGroundTruth;
+    blueTrajectories = blueGroundTruth.filter(
+      (gt) => ![SIDC.BLUE_RADAR, SIDC.GREEN_TRANSMITTER].includes(gt.sidc),
+    );
   } else {
     throw new Error("This part should never be reached!");
   }
