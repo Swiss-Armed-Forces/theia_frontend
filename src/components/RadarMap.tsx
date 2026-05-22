@@ -68,18 +68,34 @@ export default function RadarMap({
     />
   ));
 
+  const blueInitStyle = { color: "#1789FC", fillOpacity: 0.3 };
+  const blueUpdateStyle = {
+    color: "blue",
+    dashArray: "5, 5",
+    fillOpacity: 0.2,
+  };
+  const redInitStyle = { color: "#f2a202", fillOpacity: 0.3 };
+  const redUpdateStyle = { color: "red", dashArray: "5, 5", fillOpacity: 0.2 };
+
+  const blueTrackInitCoverageLayers = blueTrackInitCoverages.map(
+    (coverage, i) => (
+      <GeoJSON
+        key={i}
+        data={coverage}
+        interactive={false}
+        style={blueInitStyle}
+      />
+    ),
+  );
   const blueTrackUpdateCoverageLayers = blueTrackUpdateCoverages.map(
     (coverage, i) => (
       <GeoJSON
         key={i}
         data={coverage}
         interactive={false}
-        style={{ color: settings.accent }}
+        style={blueUpdateStyle}
       />
     ),
-  );
-  const blueTrackInitCoverageLayers = blueTrackInitCoverages.map(
-    (coverage, i) => <GeoJSON key={i} data={coverage} interactive={false} />,
   );
   const redTrackUpdateCoverageLayers = redTrackUpdateCoverages.map(
     (coverage, i) => (
@@ -87,7 +103,7 @@ export default function RadarMap({
         key={i}
         data={coverage}
         interactive={false}
-        style={{ color: "red" }}
+        style={redUpdateStyle}
       />
     ),
   );
@@ -97,7 +113,7 @@ export default function RadarMap({
         key={i}
         data={coverage}
         interactive={false}
-        style={{ color: "orange" }}
+        style={redInitStyle}
       />
     ),
   );
@@ -197,7 +213,7 @@ export default function RadarMap({
             style={{
               width: 16,
               height: 16,
-              background: "var(--primary)",
+              background: blueInitStyle.color,
               display: "inline-block",
               borderRadius: 3,
             }}
@@ -216,12 +232,54 @@ export default function RadarMap({
             style={{
               width: 16,
               height: 16,
-              background: "var(--accent)",
+              background: blueUpdateStyle.color,
+              strokeDasharray: blueUpdateStyle.dashArray,
+              strokeWidth: 2,
               display: "inline-block",
               borderRadius: 3,
             }}
           />
           Track Update coverage
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginTop: 6,
+          }}
+        >
+          <span
+            style={{
+              width: 16,
+              height: 16,
+              background: redInitStyle.color,
+              display: "inline-block",
+              borderRadius: 3,
+            }}
+          />
+          RED Track Init coverage
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginTop: 6,
+          }}
+        >
+          <span
+            style={{
+              width: 16,
+              height: 16,
+              background: redUpdateStyle.color,
+              strokeDasharray: redUpdateStyle.dashArray,
+              strokeWidth: 2,
+              display: "inline-block",
+              borderRadius: 3,
+            }}
+          />
+          RED Track Update coverage
         </div>
       </div>
     </div>
