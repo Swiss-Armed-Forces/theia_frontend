@@ -95,26 +95,31 @@ export default function useRadarData(extrapolate: boolean) {
   // const time = new Date("2022-06-27T23:01:40");
 
   useEffect(() => {
+    const toCalculate = [] as [
+      SituationalPicture,
+      (features: GeoJSONFeature[]) => void,
+      (features: GeoJSONFeature[]) => void,
+    ][];
+
+    if (["BLUE", "GOD"].includes(settings.perspective)) {
+      toCalculate.push([
+        blueSituationalPicture,
+        setBlueTrackInitCoverages,
+        setBlueTrackUpdateCoverages,
+      ]);
+    }
+    if (["RED", "GOD"].includes(settings.perspective)) {
+      toCalculate.push([
+        redSituationalPicture,
+        setRedTrackInitCoverages,
+        setRedTrackUpdateCoverages,
+      ]);
+    }
     for (const [
       situationalPicture,
       setTrackInitCoverages,
       setTrackUpdateCoverages,
-    ] of [
-      [
-        blueSituationalPicture,
-        setBlueTrackInitCoverages,
-        setBlueTrackUpdateCoverages,
-      ],
-      [
-        redSituationalPicture,
-        setRedTrackInitCoverages,
-        setRedTrackUpdateCoverages,
-      ],
-    ] as [
-      SituationalPicture,
-      (features: GeoJSONFeature[]) => void,
-      (features: GeoJSONFeature[]) => void,
-    ][]) {
+    ] of toCalculate) {
       const monostaticSensors = situationalPicture.friendly_radars.filter(
         (sensor) =>
           arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
