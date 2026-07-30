@@ -14,7 +14,7 @@ import ClickPopup from "./ClickPopup";
 import { extractState } from "../util/utils";
 import IntervalSelector from "./IntervalSelector";
 import { useSettings } from "../contexts/SettingsContext";
-import type { LineString } from "geojson";
+// import type { LineString } from "geojson";
 
 export default function RadarMap({
   time,
@@ -61,7 +61,11 @@ export default function RadarMap({
   ));
   const groundTruthLayers = visibleTrajectories.map((trajectory) => (
     <TrajectoryLayer
-      key={"id" in trajectory ? parseInt(trajectory.id) : trajectory.target_id}
+      key={
+        "id" in trajectory
+          ? `TRACK ${trajectory.id}`
+          : `TRUTH ${trajectory.target_id}`
+      }
       trajectory={trajectory}
       currentTime={time}
       isBlue={false}
@@ -118,29 +122,29 @@ export default function RadarMap({
     ),
   );
 
-  const calcGridLayer = (
-    <GeoJSON
-      data={
-        {
-          type: "LineString",
-          coordinates: [
-            [settings.pclCalcGrid.lon_start, settings.pclCalcGrid.lat_start],
-            [settings.pclCalcGrid.lon_stop, settings.pclCalcGrid.lat_start],
-            [settings.pclCalcGrid.lon_stop, settings.pclCalcGrid.lat_stop],
-            [settings.pclCalcGrid.lon_start, settings.pclCalcGrid.lat_stop],
-            [settings.pclCalcGrid.lon_start, settings.pclCalcGrid.lat_start],
-          ],
-        } as LineString
-      }
-      interactive={false}
-      style={{
-        color: "black",
-        weight: 2,
-        dashArray: "6 4",
-        fill: false,
-      }}
-    />
-  );
+  // const calcGridLayer = (
+  //   <GeoJSON
+  //     data={
+  //       {
+  //         type: "LineString",
+  //         coordinates: [
+  //           [settings.pclCalcGrid.lon_start, settings.pclCalcGrid.lat_start],
+  //           [settings.pclCalcGrid.lon_stop, settings.pclCalcGrid.lat_start],
+  //           [settings.pclCalcGrid.lon_stop, settings.pclCalcGrid.lat_stop],
+  //           [settings.pclCalcGrid.lon_start, settings.pclCalcGrid.lat_stop],
+  //           [settings.pclCalcGrid.lon_start, settings.pclCalcGrid.lat_start],
+  //         ],
+  //       } as LineString
+  //     }
+  //     interactive={false}
+  //     style={{
+  //       color: "black",
+  //       weight: 2,
+  //       dashArray: "6 4",
+  //       fill: false,
+  //     }}
+  //   />
+  // );
 
   return (
     <div
@@ -183,7 +187,6 @@ export default function RadarMap({
         {monostaticRadarMarkers}
         {pclSensorMarkers}
         {groundTruthLayers}
-        {calcGridLayer}
         <ClickPopup />
       </MapContainer>
       <div
@@ -218,68 +221,7 @@ export default function RadarMap({
               borderRadius: 3,
             }}
           />
-          Track Init coverage
-        </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginTop: 6,
-          }}
-        >
-          <span
-            style={{
-              width: 16,
-              height: 16,
-              background: blueUpdateStyle.color,
-              strokeDasharray: blueUpdateStyle.dashArray,
-              strokeWidth: 2,
-              display: "inline-block",
-              borderRadius: 3,
-            }}
-          />
-          Track Update coverage
-        </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginTop: 6,
-          }}
-        >
-          <span
-            style={{
-              width: 16,
-              height: 16,
-              background: redInitStyle.color,
-              display: "inline-block",
-              borderRadius: 3,
-            }}
-          />
-          RED Track Init coverage
-        </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginTop: 6,
-          }}
-        >
-          <span
-            style={{
-              width: 16,
-              height: 16,
-              background: redUpdateStyle.color,
-              strokeDasharray: redUpdateStyle.dashArray,
-              strokeWidth: 2,
-              display: "inline-block",
-              borderRadius: 3,
-            }}
-          />
-          RED Track Update coverage
+          BLUE Radar coverage
         </div>
       </div>
     </div>

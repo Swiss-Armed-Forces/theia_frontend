@@ -35,7 +35,7 @@ export type DisplayData = {
   redTrackUpdateCoverages: GeoJSONFeature[];
 };
 
-const DEFAULT_PCL_RCS = 1.0;
+const DEFAULT_PCL_RCS = 100.0;
 
 // const fetchClient = createFetchClient<paths>({
 //   baseUrl: "http://localhost:8000",
