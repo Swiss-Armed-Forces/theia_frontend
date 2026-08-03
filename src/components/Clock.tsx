@@ -1,4 +1,5 @@
 export default function Clock({ time }: { time: Date }) {
+  const pad = (n: number) => n.toString().padStart(2, "0");
   return (
     <span
       style={{
@@ -7,9 +8,11 @@ export default function Clock({ time }: { time: Date }) {
         textAlign: "center",
       }}
     >
-      {time.toLocaleDateString("gsw")}
+      {`${time.getUTCFullYear()}-${pad(time.getUTCMonth() + 1)}-${pad(time.getUTCDay())}`}
       <br />
-      <span style={{fontSize: "1.5em"}}>{time.toLocaleTimeString("gsw")}</span>
+      <span style={{ fontSize: "1.5em" }}>
+        {`${pad(time.getUTCHours())}:${pad(time.getUTCMinutes())}:${pad(time.getUTCSeconds())}`}
+      </span>
     </span>
   );
 }

@@ -36,7 +36,7 @@ export const SIDC = {
 
 export const defaultSettings: Settings = {
   minHeight: 0,
-  maxHeight: 110_000,
+  maxHeight: 300_000,
   nHeightBins: 31,
   coverageAlt: 100_000,
   coverageAzimuthResDegree: 2,
