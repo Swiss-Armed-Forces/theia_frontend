@@ -1,8 +1,8 @@
-import { createContext, useContext } from "react";
+import { createContext } from "react";
 import type { LatLonHeightGrid } from "../hooks/useRadarData";
 import { defaultSettings, type PERSPECTIVES } from "./constants";
 
-export type Perspective = typeof PERSPECTIVES[number];
+export type Perspective = (typeof PERSPECTIVES)[number];
 
 export type Settings = {
   minHeight: number;
@@ -41,5 +41,3 @@ export const SettingsContext = createContext<SettingsContextType>({
   settings: defaultSettings,
   updateSetting: () => {}, // no-op default
 });
-
-export const useSettings = () => useContext(SettingsContext);

@@ -13,7 +13,7 @@ import TrajectoryLayer from "./TrajectoryLayer";
 import ClickPopup from "./ClickPopup";
 import { extractState } from "../util/utils";
 import IntervalSelector from "./IntervalSelector";
-import { useSettings } from "../contexts/SettingsContext";
+import { useSettings } from "../hooks/useSettings";
 // import type { LineString } from "geojson";
 
 export default function RadarMap({

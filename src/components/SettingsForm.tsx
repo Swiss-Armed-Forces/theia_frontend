@@ -3,8 +3,9 @@ import {
   OSM_TILE_SERVER,
   PERSPECTIVES,
 } from "../contexts/constants";
-import { useSettings, type Perspective } from "../contexts/SettingsContext";
+import { type Perspective } from "../contexts/SettingsContext";
 import type { LatLonHeightGrid } from "../hooks/useRadarData";
+import { useSettings } from "../hooks/useSettings";
 import ButtonGroup from "./ButtonGroup";
 import GridDefinition from "./GridDefinition";
 import Switch from "./Switch";
