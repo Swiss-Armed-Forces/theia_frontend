@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import RadarMap from "./RadarMap";
 import SettingsForm from "./SettingsForm";
 import TopBar from "./TopBar";
@@ -9,6 +12,7 @@ import { useSettings } from "../hooks/useSettings";
 export default function Gui() {
   const sidebarContent = <SettingsForm />;
   const { settings } = useSettings();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const {
     time,
@@ -43,9 +47,21 @@ export default function Gui() {
       />
 
       <div className="content">
-        <aside className="sidebar panel">{sidebarContent}</aside>
+        {!isSidebarCollapsed && (
+          <aside className="sidebar panel">{sidebarContent}</aside>
+        )}
+        <button
+          className="sidebar-toggle"
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          title={isSidebarCollapsed ? "Show panel" : "Hide panel"}
+        >
+          <FontAwesomeIcon
+            icon={isSidebarCollapsed ? faChevronRight : faChevronLeft}
+          />
+        </button>
         <main className="main panel">
           <RadarMap
+            resizeTrigger={isSidebarCollapsed}
             time={time}
             blueMonostaticRadars={blueMonostaticRadars}
             blueTrackInitCoverages={displayData.blueTrackInitCoverages}

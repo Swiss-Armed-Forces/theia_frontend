@@ -7,7 +7,7 @@ import type {
   Track,
 } from "../hooks/useRadarData";
 import "leaflet/dist/leaflet.css";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MonostaticRadarMarker, PclSensorMarkers } from "./RadarMarker";
 import TrajectoryLayer from "./TrajectoryLayer";
 import ClickPopup from "./ClickPopup";
@@ -25,6 +25,7 @@ export default function RadarMap({
   redTrackInitCoverages,
   redTrackUpdateCoverages,
   trajectories,
+  resizeTrigger,
 }: {
   time: Date;
   blueMonostaticRadars: Sensor[];
@@ -34,9 +35,14 @@ export default function RadarMap({
   redTrackInitCoverages: GeoJSONFeature[];
   redTrackUpdateCoverages: GeoJSONFeature[];
   trajectories: (GroundTruth | Track)[];
+  resizeTrigger?: boolean;
 }) {
   const { settings } = useSettings();
   const mapRef = useRef(null as Map | null);
+
+  useEffect(() => {
+    mapRef.current?.invalidateSize();
+  }, [resizeTrigger]);
   const [visibleAltRange, setVisibleAltRange] = useState<[number, number]>([
     settings.minHeight,
     settings.maxHeight,
