@@ -8,7 +8,7 @@ export default function Clock({ time }: { time: Date }) {
         textAlign: "center",
       }}
     >
-      {`${time.getUTCFullYear()}-${pad(time.getUTCMonth() + 1)}-${pad(time.getUTCDay())}`}
+      {`${time.getUTCFullYear()}-${pad(time.getUTCMonth() + 1)}-${pad(time.getUTCDate())}`}
       <br />
       <span style={{ fontSize: "1.5em" }}>
         {`${pad(time.getUTCHours())}:${pad(time.getUTCMinutes())}:${pad(time.getUTCSeconds())}`}
