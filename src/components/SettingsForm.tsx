@@ -1,13 +1,14 @@
 import {
+  BLUE_GEOJSON_COLOR,
   ESRI_SATELLITE_TILE_SERVER,
   OSM_TILE_SERVER,
   PERSPECTIVES,
+  RED_GEOJSON_COLOR,
 } from "../contexts/constants";
 import { type Perspective } from "../contexts/SettingsContext";
-import type { LatLonHeightGrid } from "../hooks/useRadarData";
 import { useSettings } from "../hooks/useSettings";
 import ButtonGroup from "./ButtonGroup";
-import GridDefinition from "./GridDefinition";
+import ChipList from "./ChipList";
 import Switch from "./Switch";
 
 function isPerspective(value: unknown): value is Perspective {
@@ -16,7 +17,21 @@ function isPerspective(value: unknown): value is Perspective {
   );
 }
 
-export default function SettingsForm() {
+export default function SettingsForm({
+  blueGeoJsonKeys,
+  redGeoJsonKeys,
+  hiddenBlueKeys,
+  hiddenRedKeys,
+  onToggleBlue,
+  onToggleRed,
+}: {
+  blueGeoJsonKeys: string[];
+  redGeoJsonKeys: string[];
+  hiddenBlueKeys: Set<string>;
+  hiddenRedKeys: Set<string>;
+  onToggleBlue: (key: string) => void;
+  onToggleRed: (key: string) => void;
+}) {
   const { settings, updateSetting } = useSettings();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -78,42 +93,32 @@ export default function SettingsForm() {
           }}
         />
       </fieldset>
-      <fieldset
-        style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-      >
-        <legend>RAD coverage calculation</legend>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignContent: "center",
-            gap: 3,
-          }}
+      {["BLUE", "GOD"].includes(settings.perspective) && (
+        <fieldset
+          style={{ display: "flex", flexDirection: "column", gap: "10px" }}
         >
-          <span
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignContent: "center",
-              gap: 5,
-            }}
-          >
-            <Switch
-              on={settings.coverageRangeOnly}
-              setOn={(on: boolean) => {
-                updateSetting("coverageRangeOnly", on);
-              }}
-            />
-            <span>Range only</span>
-          </span>
-        </div>
-      </fieldset>
-      <GridDefinition
-        grid={settings.pclCalcGrid}
-        setGrid={(grid: LatLonHeightGrid) => {
-          updateSetting("pclCalcGrid", grid);
-        }}
-      />
+          <legend>Blue Overlays</legend>
+          <ChipList
+            keys={blueGeoJsonKeys}
+            hiddenKeys={hiddenBlueKeys}
+            onToggle={onToggleBlue}
+            color={BLUE_GEOJSON_COLOR}
+          />
+        </fieldset>
+      )}
+      {["RED", "GOD"].includes(settings.perspective) && (
+        <fieldset
+          style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+        >
+          <legend>Red Overlays</legend>
+          <ChipList
+            keys={redGeoJsonKeys}
+            hiddenKeys={hiddenRedKeys}
+            onToggle={onToggleRed}
+            color={RED_GEOJSON_COLOR}
+          />
+        </fieldset>
+      )}
     </div>
   );
 }

@@ -1,19 +1,6 @@
-import type { LatLonHeightGrid } from "../hooks/useRadarData";
 import type { Settings } from "./SettingsContext";
 
 export const PERSPECTIVES = ["BLUE", "RED", "GOD"] as const;
-
-export const DEFAULT_PCL_COVERAGE_GRID: LatLonHeightGrid = {
-  lat_start: 46.88835,
-  lat_stop:  47.69682,
-  lat_res: 0.01,
-  lon_start: 7.46548,
-  lon_stop: 8.76724,
-  lon_res: 0.01,
-  height_start: 1000.0,
-  height_stop: 1000.0,
-  height_res: 1.0,
-};
 
 export const OSM_TILE_SERVER = {
   name: "Map" as const,
@@ -34,13 +21,13 @@ export const SIDC = {
   GREEN_TRANSMITTER: "10242000001212010000",
 }
 
+export const BLUE_GEOJSON_COLOR = "#1789FC";
+export const RED_GEOJSON_COLOR = "#f2a202";
+
 export const defaultSettings: Settings = {
   minHeight: 0,
   maxHeight: 300_000,
   nHeightBins: 31,
-  coverageAlt: 1_000,
-  coverageAzimuthResDegree: 2,
-  coverageRangeOnly: true,
   extrapolate: false,
   primaryMuted: "#7ba7e4",
   primaryBackground: "#0F172A",
@@ -51,6 +38,5 @@ export const defaultSettings: Settings = {
   natoBlue: "#80e0ff",
   natoRed: "#ff8080",
   tileServerConfig: OSM_TILE_SERVER,
-  pclCalcGrid: DEFAULT_PCL_COVERAGE_GRID,
   perspective: "BLUE",
 };

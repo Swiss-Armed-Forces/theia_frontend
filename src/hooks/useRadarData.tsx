@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import type { components } from "./schema";
-import type { Feature, Polygon } from "geojson";
+import type { Feature, Polygon, MultiPolygon } from "geojson";
 export type GeoJSONPolygon = Polygon;
-export type GeoJSONFeature = Feature<Polygon>;
-import memoize from "memoizee";
-import stringify from "fast-json-stable-stringify";
+export type GeoJSONFeature = Feature<Polygon | MultiPolygon>;
 import { useSettings } from "./useSettings";
-import { arePointsEqual } from "../util/utils";
 import type { Perspective } from "../contexts/SettingsContext";
 import { SIDC } from "../contexts/constants";
 // import createFetchClient from "openapi-fetch";
@@ -21,21 +18,17 @@ export type Transmitter = components["schemas"]["Transmitter-Input"];
 export type Point = components["schemas"]["Point"];
 export type Track = components["schemas"]["ExtrapolatedTrack"];
 export type GroundTruth = components["schemas"]["ExtrapolatedGroundtruth"];
-export type LatLonHeightGrid = components["schemas"]["LatLonHeightGrid"];
+export type Team = components["schemas"]["Team"];
 export type Sensor = MonostaticSensor | PclSensor;
 
 export type DisplayData = {
   blueRadars: (MonostaticSensor | PclSensor)[];
   blueTargets: Track[] | GroundTruth[];
-  blueTrackInitCoverages: GeoJSONFeature[];
-  blueTrackUpdateCoverages: GeoJSONFeature[];
+  blueGeoJson: Record<string, GeoJSONFeature>;
   redRadars: Sensor[];
   redTargets: Track[] | GroundTruth[];
-  redTrackInitCoverages: GeoJSONFeature[];
-  redTrackUpdateCoverages: GeoJSONFeature[];
+  redGeoJson: Record<string, GeoJSONFeature>;
 };
-
-const DEFAULT_PCL_RCS = 100.0;
 
 // const fetchClient = createFetchClient<paths>({
 //   baseUrl: "http://localhost:8000",
@@ -74,17 +67,11 @@ export default function useRadarData(extrapolate: boolean) {
   const [redSituationalPicture, setRedSituationalPicture] = useState(
     DEFAULT_SITUATIONAL_PICTURE,
   );
-  const [blueTrackInitCoverages, setBlueTrackInitCoverages] = useState(
-    [] as GeoJSONFeature[],
+  const [blueGeoJson, setBlueGeoJson] = useState(
+    {} as Record<string, GeoJSONFeature>,
   );
-  const [blueTrackUpdateCoverages, setBlueTrackUpdateCoverages] = useState(
-    [] as GeoJSONFeature[],
-  );
-  const [redTrackInitCoverages, setRedTrackInitCoverages] = useState(
-    [] as GeoJSONFeature[],
-  );
-  const [redTrackUpdateCoverages, setRedTrackUpdateCoverages] = useState(
-    [] as GeoJSONFeature[],
+  const [redGeoJson, setRedGeoJson] = useState(
+    {} as Record<string, GeoJSONFeature>,
   );
 
   const secondsInPast = 1;
@@ -95,70 +82,9 @@ export default function useRadarData(extrapolate: boolean) {
   // const time = new Date("2022-06-27T23:01:40");
 
   useEffect(() => {
-    const toCalculate = [] as [
-      SituationalPicture,
-      (features: GeoJSONFeature[]) => void,
-      (features: GeoJSONFeature[]) => void,
-    ][];
-
-    if (["BLUE", "GOD"].includes(settings.perspective)) {
-      toCalculate.push([
-        blueSituationalPicture,
-        setBlueTrackInitCoverages,
-        setBlueTrackUpdateCoverages,
-      ]);
-    }
-    if (["RED", "GOD"].includes(settings.perspective)) {
-      toCalculate.push([
-        redSituationalPicture,
-        setRedTrackInitCoverages,
-        setRedTrackUpdateCoverages,
-      ]);
-    }
-    for (const [
-      situationalPicture,
-      setTrackInitCoverages,
-      setTrackUpdateCoverages,
-    ] of toCalculate) {
-      const monostaticSensors = situationalPicture.friendly_radars.filter(
-        (sensor) =>
-          arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
-      ) as MonostaticSensor[];
-      const pclSensors = situationalPicture.friendly_radars.filter(
-        (sensor) =>
-          !arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
-      ) as PclSensor[];
-      Promise.all([
-        Promise.all(
-          monostaticSensors.map((radar) =>
-            calculateMonostaticCoverage(
-              radar,
-              settings.coverageAlt,
-              settings.coverageAzimuthResDegree,
-              settings.coverageRangeOnly,
-            ),
-          ),
-        ),
-        calculatePclCoverage(pclSensors, DEFAULT_PCL_RCS, settings.pclCalcGrid),
-      ]).then(([monostaticCoverages, pclCoverages]) => {
-        const trackInitFeatures = monostaticCoverages;
-        if (pclCoverages.length != 2) {
-          throw Error("Expected 2");
-        }
-        if (pclCoverages[0].geometry.coordinates.length > 0) {
-          trackInitFeatures.push(pclCoverages[0]);
-        }
-        const trackUpdateFeatures =
-          pclCoverages[1].geometry.coordinates.length > 0
-            ? [pclCoverages[1]]
-            : [];
-
-        // Track init mask.
-        setTrackInitCoverages(trackInitFeatures);
-        setTrackUpdateCoverages(trackUpdateFeatures);
-      });
-    }
-  }, [blueSituationalPicture, redSituationalPicture, settings]);
+    fetchGeoJson("BLUE").then(setBlueGeoJson);
+    fetchGeoJson("RED").then(setRedGeoJson);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -196,12 +122,10 @@ export default function useRadarData(extrapolate: boolean) {
     settings.perspective,
     blueSituationalPicture,
     blueGroundTruth,
-    blueTrackInitCoverages,
-    blueTrackUpdateCoverages,
+    blueGeoJson,
     redSituationalPicture,
     redGroundTruth,
-    redTrackInitCoverages,
-    redTrackUpdateCoverages,
+    redGeoJson,
   );
 
   return {
@@ -218,12 +142,10 @@ function buildDisplayData(
   perspective: Perspective,
   blueSituationalPicture: SituationalPicture,
   blueGroundTruth: GroundTruth[],
-  blueTrackInitCoverages: GeoJSONFeature[],
-  blueTrackUpdateCoverages: GeoJSONFeature[],
+  blueGeoJson: Record<string, GeoJSONFeature>,
   redSituationalPicture: SituationalPicture,
   redGroundTruth: GroundTruth[],
-  redTrackInitCoverages: GeoJSONFeature[],
-  redTrackUpdateCoverages: GeoJSONFeature[],
+  redGeoJson: Record<string, GeoJSONFeature>,
 ): DisplayData {
   let blueTrajectories = [];
   if (perspective === "RED") {
@@ -239,12 +161,9 @@ function buildDisplayData(
     ? blueSituationalPicture.friendly_radars
     : [];
 
-  const displayBlueTrackInitCoverages = ["BLUE", "GOD"].includes(perspective)
-    ? blueTrackInitCoverages
-    : [];
-  const displayBlueTrackUpdateCoverages = ["BLUE", "GOD"].includes(perspective)
-    ? blueTrackUpdateCoverages
-    : [];
+  const displayBlueGeoJson = ["BLUE", "GOD"].includes(perspective)
+    ? blueGeoJson
+    : {};
 
   let redTrajectories = [] as Track[] | GroundTruth[];
   if (perspective === "BLUE") {
@@ -258,22 +177,17 @@ function buildDisplayData(
     ? redSituationalPicture.friendly_radars
     : [];
 
-  const displayRedTrackInitCoverages = ["RED", "GOD"].includes(perspective)
-    ? redTrackInitCoverages
-    : [];
-  const displayRedTrackUpdateCoverages = ["RED", "GOD"].includes(perspective)
-    ? redTrackUpdateCoverages
-    : [];
+  const displayRedGeoJson = ["RED", "GOD"].includes(perspective)
+    ? redGeoJson
+    : {};
 
   return {
     blueRadars: blueRadars,
     blueTargets: blueTrajectories,
-    blueTrackInitCoverages: displayBlueTrackInitCoverages,
-    blueTrackUpdateCoverages: displayBlueTrackUpdateCoverages,
+    blueGeoJson: displayBlueGeoJson,
     redRadars: redRadars,
     redTargets: redTrajectories,
-    redTrackInitCoverages: displayRedTrackInitCoverages,
-    redTrackUpdateCoverages: displayRedTrackUpdateCoverages,
+    redGeoJson: displayRedGeoJson,
   };
 }
 
@@ -388,81 +302,14 @@ async function fetchGroundTruth(
   return data;
 }
 
-const calculateMonostaticCoverage = memoize(
-  async (
-    radar: MonostaticSensor,
-    target_alt: number,
-    rcs: number,
-    range_only: boolean,
-    probability_threshold: number = 0.8,
-    azimuth_resolution_degree: number = 2.0,
-  ): Promise<GeoJSONFeature> => {
-    const query = new URLSearchParams({
-      target_alt: String(target_alt),
-      rcs: String(rcs),
-      probability_threshold: String(probability_threshold),
-      azimuth_resolution_degree: String(azimuth_resolution_degree),
-      range_only: String(range_only),
-    });
-    const res = await fetch(
-      `${BASE_URL}/calculate_monostatic_coverage?${query}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(radar),
-      },
-    );
-    if (!res.ok) {
-      const error = await res.json();
-      console.error("Validation error:", JSON.stringify(error, null, 2));
-      throw new Error(
-        `POST /calculate_monostatic_coverage failed: ${res.status}`,
-      );
-    }
-    return res.json();
-  },
-  {
-    promise: true,
-    // We need to use this normalizer because the key order is not guaranteed
-    // to be stable for objects.
-    normalizer: (args) => stringify(args),
-  },
-);
-
-const calculatePclCoverage = memoize(
-  async (
-    sensors: PclSensor[],
-    rcs: number,
-    grid: LatLonHeightGrid,
-    snrThreshold: number = 15.0,
-    dopplerThreshold: number = 2.0,
-    delayThreshold: number = 1.0,
-  ): Promise<[GeoJSONFeature, GeoJSONFeature]> => {
-    const query = new URLSearchParams({
-      rcs: String(rcs),
-      snr_threshold: String(snrThreshold),
-      doppler_threshold: String(dopplerThreshold),
-      delay_threshold: String(delayThreshold),
-    });
-    const res = await fetch(`${BASE_URL}/calculate_pcl_coverage?${query}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sensors: sensors,
-        grid: grid,
-      }),
-    });
-    if (!res.ok) {
-      const error = await res.json();
-      console.error("Validation error:", JSON.stringify(error, null, 2));
-      throw new Error(`POST /calculate_pcl_coverage failed: ${res.status}`);
-    }
-    return res.json();
-  },
-  {
-    promise: true,
-    // We need to use this normalizer because the key order is not guaranteed
-    // to be stable for objects.
-    normalizer: (args) => stringify(args),
-  },
-);
+async function fetchGeoJson(
+  which: Team,
+): Promise<Record<string, GeoJSONFeature>> {
+  const response = await fetch(`${BASE_URL}/geojson/${which}`);
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("Validation error:", JSON.stringify(error, null, 2));
+    throw new Error(`GET /geojson/${which} failed: ${response.status}`);
+  }
+  return response.json();
+}

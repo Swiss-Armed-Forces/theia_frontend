@@ -1,5 +1,4 @@
 import { createContext } from "react";
-import type { LatLonHeightGrid } from "../hooks/useRadarData";
 import { defaultSettings, type PERSPECTIVES } from "./constants";
 
 export type Perspective = (typeof PERSPECTIVES)[number];
@@ -8,9 +7,6 @@ export type Settings = {
   minHeight: number;
   maxHeight: number;
   nHeightBins: number;
-  coverageAlt: number;
-  coverageAzimuthResDegree: number;
-  coverageRangeOnly: boolean;
   extrapolate: boolean;
   primaryMuted: string;
   primaryBackground: string;
@@ -21,7 +17,6 @@ export type Settings = {
   natoBlue: string;
   natoRed: string;
   tileServerConfig: TileServerConfig;
-  pclCalcGrid: LatLonHeightGrid;
   perspective: Perspective;
 };
 

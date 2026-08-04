@@ -14,26 +14,26 @@ import ClickPopup from "./ClickPopup";
 import { extractState } from "../util/utils";
 import IntervalSelector from "./IntervalSelector";
 import { useSettings } from "../hooks/useSettings";
-// import type { LineString } from "geojson";
+import { BLUE_GEOJSON_COLOR, RED_GEOJSON_COLOR } from "../contexts/constants";
 
 export default function RadarMap({
   time,
   blueMonostaticRadars,
   bluePclSensors,
-  blueTrackInitCoverages,
-  blueTrackUpdateCoverages,
-  redTrackInitCoverages,
-  redTrackUpdateCoverages,
+  blueGeoJson,
+  redGeoJson,
+  hiddenBlueKeys,
+  hiddenRedKeys,
   trajectories,
   resizeTrigger,
 }: {
   time: Date;
   blueMonostaticRadars: Sensor[];
   bluePclSensors: Sensor[];
-  blueTrackInitCoverages: GeoJSONFeature[];
-  blueTrackUpdateCoverages: GeoJSONFeature[];
-  redTrackInitCoverages: GeoJSONFeature[];
-  redTrackUpdateCoverages: GeoJSONFeature[];
+  blueGeoJson: Record<string, GeoJSONFeature>;
+  redGeoJson: Record<string, GeoJSONFeature>;
+  hiddenBlueKeys: Set<string>;
+  hiddenRedKeys: Set<string>;
   trajectories: (GroundTruth | Track)[];
   resizeTrigger?: boolean;
 }) {
@@ -78,79 +78,31 @@ export default function RadarMap({
     />
   ));
 
-  const blueInitStyle = { color: "#1789FC", fillOpacity: 0.3 };
-  const blueUpdateStyle = {
-    color: "blue",
-    dashArray: "5, 5",
-    fillOpacity: 0.2,
-  };
-  const redInitStyle = { color: "#f2a202", fillOpacity: 0.3 };
-  const redUpdateStyle = { color: "red", dashArray: "5, 5", fillOpacity: 0.2 };
+  const blueGeoJsonStyle = { color: BLUE_GEOJSON_COLOR, fillOpacity: 0.3 };
+  const redGeoJsonStyle = { color: RED_GEOJSON_COLOR, fillOpacity: 0.3 };
 
-  const blueTrackInitCoverageLayers = blueTrackInitCoverages.map(
-    (coverage, i) => (
+  const blueGeoJsonLayers = Object.entries(blueGeoJson)
+    .filter(([key]) => !hiddenBlueKeys.has(key))
+    .map(([key, feature]) => (
       <GeoJSON
-        key={i}
-        data={coverage}
-        interactive={false}
-        style={blueInitStyle}
+        key={key}
+        data={feature}
+        interactive={true}
+        style={blueGeoJsonStyle}
+        onEachFeature={(_feature, layer) => layer.bindTooltip(key)}
       />
-    ),
-  );
-  const blueTrackUpdateCoverageLayers = blueTrackUpdateCoverages.map(
-    (coverage, i) => (
+    ));
+  const redGeoJsonLayers = Object.entries(redGeoJson)
+    .filter(([key]) => !hiddenRedKeys.has(key))
+    .map(([key, feature]) => (
       <GeoJSON
-        key={i}
-        data={coverage}
-        interactive={false}
-        style={blueUpdateStyle}
+        key={key}
+        data={feature}
+        interactive={true}
+        style={redGeoJsonStyle}
+        onEachFeature={(_feature, layer) => layer.bindTooltip(key)}
       />
-    ),
-  );
-  const redTrackUpdateCoverageLayers = redTrackUpdateCoverages.map(
-    (coverage, i) => (
-      <GeoJSON
-        key={i}
-        data={coverage}
-        interactive={false}
-        style={redUpdateStyle}
-      />
-    ),
-  );
-  const redTrackInitCoverageLayers = redTrackInitCoverages.map(
-    (coverage, i) => (
-      <GeoJSON
-        key={i}
-        data={coverage}
-        interactive={false}
-        style={redInitStyle}
-      />
-    ),
-  );
-
-  // const calcGridLayer = (
-  //   <GeoJSON
-  //     data={
-  //       {
-  //         type: "LineString",
-  //         coordinates: [
-  //           [settings.pclCalcGrid.lon_start, settings.pclCalcGrid.lat_start],
-  //           [settings.pclCalcGrid.lon_stop, settings.pclCalcGrid.lat_start],
-  //           [settings.pclCalcGrid.lon_stop, settings.pclCalcGrid.lat_stop],
-  //           [settings.pclCalcGrid.lon_start, settings.pclCalcGrid.lat_stop],
-  //           [settings.pclCalcGrid.lon_start, settings.pclCalcGrid.lat_start],
-  //         ],
-  //       } as LineString
-  //     }
-  //     interactive={false}
-  //     style={{
-  //       color: "black",
-  //       weight: 2,
-  //       dashArray: "6 4",
-  //       fill: false,
-  //     }}
-  //   />
-  // );
+    ));
 
   return (
     <div
@@ -186,10 +138,8 @@ export default function RadarMap({
           url={settings.tileServerConfig.url}
           subdomains={["a", "b", "c"]}
         />
-        {blueTrackUpdateCoverageLayers}
-        {blueTrackInitCoverageLayers}
-        {redTrackUpdateCoverageLayers}
-        {redTrackInitCoverageLayers}
+        {blueGeoJsonLayers}
+        {redGeoJsonLayers}
         {monostaticRadarMarkers}
         {pclSensorMarkers}
         {groundTruthLayers}
@@ -209,7 +159,7 @@ export default function RadarMap({
           color: "var(--text)",
         }}
       >
-        <strong>Legend</strong>
+        {/* <strong>Legend</strong>
         <div
           style={{
             display: "flex",
@@ -222,13 +172,32 @@ export default function RadarMap({
             style={{
               width: 16,
               height: 16,
-              background: blueInitStyle.color,
+              background: blueGeoJsonStyle.color,
               display: "inline-block",
               borderRadius: 3,
             }}
           />
-          BLUE Radar coverage
+          BLUE
         </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginTop: 6,
+          }}
+        >
+          <span
+            style={{
+              width: 16,
+              height: 16,
+              background: redGeoJsonStyle.color,
+              display: "inline-block",
+              borderRadius: 3,
+            }}
+          />
+          RED
+        </div> */}
       </div>
     </div>
   );
