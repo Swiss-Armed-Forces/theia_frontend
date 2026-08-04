@@ -64,8 +64,32 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Calculate Monostatic Coverage */
-        post: operations["calculate_monostatic_coverage_calculate_monostatic_coverage_post"];
+        /** Calculate Line Of Sight */
+        post: operations["calculate_line_of_sight_calculate_monostatic_coverage_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/calculate_min_detectable_rcs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Calculate Min Detectable Rcs
+         * @description Calculate the minimum detectable radar cross section for the given
+         *     sensor on a grid. The grid dimensions are (lat, lon, MASL).
+         *
+         *     The value -1 indicates a NaN, i. e. the sensor cannot detect a target
+         *     at all at that position.
+         */
+        post: operations["calculate_min_detectable_rcs_calculate_min_detectable_rcs_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -202,6 +226,131 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Events */
+        get: operations["get_events_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/geojson/{which}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Geojson */
+        get: operations["get_geojson_geojson__which__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/elevation_at/{lat}_{lon}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Elevationat
+         * @description Calculate elevation [MASL] for the given decimal (lat, lon) coordinates.
+         */
+        get: operations["elevationAt_elevation_at__lat___lon__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fm_transmitters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Fm Transmitters */
+        get: operations["get_fm_transmitters_fm_transmitters_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/line_of_sight_distance/{lat1}_{lon1}_{alt1}/{lat2}_{lon2}_{alt2}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Los Distance
+         * @description Calculate LOS distance [m]
+         */
+        get: operations["get_los_distance_line_of_sight_distance__lat1___lon1___alt1___lat2___lon2___alt2__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/haversine_distance/{lat1}_{lon1}/{lat2}_{lon2}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Haversine Distance */
+        get: operations["get_haversine_distance_haversine_distance__lat1___lon1___lat2___lon2__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/terrain_models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Terrain Models */
+        get: operations["get_terrain_models_terrain_models_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -219,11 +368,31 @@ export interface components {
             attenuation_table_values: number[];
             polarization: components["schemas"]["Polarization"];
         };
+        /** Body_calculate_min_detectable_rcs_calculate_min_detectable_rcs_post */
+        Body_calculate_min_detectable_rcs_calculate_min_detectable_rcs_post: {
+            sensor: components["schemas"]["PclSensor-Input"];
+            grid: components["schemas"]["LatLonHeightGrid"];
+        };
         /** Body_calculate_pcl_coverage_calculate_pcl_coverage_post */
         Body_calculate_pcl_coverage_calculate_pcl_coverage_post: {
             /** Sensors */
             sensors: components["schemas"]["PclSensor-Input"][];
             grid: components["schemas"]["LatLonHeightGrid"];
+        };
+        /** ConstantRcsModel */
+        ConstantRcsModel: {
+            /** Rcs */
+            rcs: number;
+        };
+        /** EventMessage */
+        EventMessage: {
+            /**
+             * Time
+             * Format: date-time
+             */
+            time: string;
+            /** Msg */
+            msg: string;
         };
         /** ExtrapolatedGroundtruth */
         ExtrapolatedGroundtruth: {
@@ -242,7 +411,7 @@ export interface components {
              */
             time: string;
             /** Friendly Radars */
-            friendly_radars: (components["schemas"]["MonostaticSensor-Output"] | components["schemas"]["PclSensor-Output"])[];
+            friendly_radars: (components["schemas"]["MonostaticSensor-Output"] | components["schemas"]["PclSensor-Output"] | components["schemas"]["PetSensor"] | components["schemas"]["VisualSensor"])[];
             /** Enemy Tracks */
             enemy_tracks: components["schemas"]["ExtrapolatedTrack"][];
         };
@@ -262,8 +431,9 @@ export interface components {
             /**
              * Type
              * @default Feature
+             * @constant
              */
-            type: string;
+            type: "Feature";
             /** Geometry */
             geometry: components["schemas"]["GeoJSONPolygon"] | components["schemas"]["GeoJSONMultiPolygon"];
             /**
@@ -327,8 +497,11 @@ export interface components {
              * @default 100
              */
             min_range_uncertainty: number;
-            /** Max Range Uncertainty */
-            max_range_uncertainty?: number;
+            /**
+             * Max Range Uncertainty
+             * @default 10000
+             */
+            max_range_uncertainty: number;
             /**
              * Min Angular Uncertainty
              * @default 0.017453292519943295
@@ -408,6 +581,38 @@ export interface components {
             receiver: components["schemas"]["Receiver-Output"];
             error_model: components["schemas"]["PclMeasurementModel"];
         };
+        /** PetMeasurementModel */
+        PetMeasurementModel: {
+            /**
+             * Min Elevation Uncertainty
+             * @default 0.017453292519943295
+             */
+            min_elevation_uncertainty: number;
+            /**
+             * Max Elevation Uncertainty
+             * @default 0.17453292519943295
+             */
+            max_elevation_uncertainty: number;
+            /**
+             * Min Azimuth Uncertainty
+             * @default 0.017453292519943295
+             */
+            min_azimuth_uncertainty: number;
+            /**
+             * Max Azimuth Uncertainty
+             * @default 0.17453292519943295
+             */
+            max_azimuth_uncertainty: number;
+        };
+        /** PetSensor */
+        PetSensor: {
+            /** Id */
+            id: number;
+            transmitter: components["schemas"]["Transmitter-Output"];
+            receiver: components["schemas"]["Receiver-Output"];
+            target: components["schemas"]["Target"];
+            error_model: components["schemas"]["PetMeasurementModel"];
+        };
         /** Point */
         Point: {
             /** Lat */
@@ -439,6 +644,10 @@ export interface components {
             min_elevation: number;
             /** Max Elevation */
             max_elevation: number;
+            /** Min Azimuth */
+            min_azimuth: number;
+            /** Max Azimuth */
+            max_azimuth: number;
             /** Rotation Time */
             rotation_time: number;
             /** Bandwidth */
@@ -488,6 +697,10 @@ export interface components {
             min_elevation: number;
             /** Max Elevation */
             max_elevation: number;
+            /** Min Azimuth */
+            min_azimuth: number;
+            /** Max Azimuth */
+            max_azimuth: number;
             /** Rotation Time */
             rotation_time: number;
             /** Bandwidth */
@@ -519,6 +732,28 @@ export interface components {
             antenna_efficiency_value: number;
             vertical_attenuation?: components["schemas"]["AttenuationModel"] | null;
             horizontal_attenuation?: components["schemas"]["AttenuationModel"] | null;
+        };
+        /**
+         * Target
+         * @description Represents a detectable entity.
+         */
+        Target: {
+            /** Id */
+            id: number;
+            /** Is Stationary */
+            is_stationary: boolean;
+            /**
+             * Name
+             * @default
+             */
+            name: string;
+            /** Sidc */
+            sidc: string;
+            point: components["schemas"]["Point"];
+            cross_section_model: components["schemas"]["ConstantRcsModel"];
+            velocity: components["schemas"]["Velocity"];
+            receiver?: components["schemas"]["Receiver-Output"] | null;
+            transmitter?: components["schemas"]["Transmitter-Output"] | null;
         };
         /**
          * Team
@@ -624,6 +859,44 @@ export interface components {
             /** Error Type */
             type: string;
         };
+        /** Velocity */
+        Velocity: {
+            /** Vx */
+            vx: number;
+            /** Vy */
+            vy: number;
+            /** Vz */
+            vz: number;
+        };
+        /** VisualSensor */
+        VisualSensor: {
+            /** Id */
+            id: number;
+            /**
+             * @default {
+             *       "id": -1,
+             *       "point": {
+             *         "alt": 0,
+             *         "lat": 0,
+             *         "lon": 0
+             *       },
+             *       "power": 0,
+             *       "antenna_height": 0,
+             *       "antenna_diameter": 0,
+             *       "antenna_gain": 0,
+             *       "frequency": 0,
+             *       "pulse_width": 0,
+             *       "polarization": 0,
+             *       "bandwidth": 0,
+             *       "max_coherent_integration_time": 0,
+             *       "antenna_efficiency_value": 0
+             *     }
+             */
+            transmitter: components["schemas"]["Transmitter-Output"];
+            receiver: components["schemas"]["Receiver-Output"];
+            /** Detection Range */
+            detection_range: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -723,12 +996,11 @@ export interface operations {
             };
         };
     };
-    calculate_monostatic_coverage_calculate_monostatic_coverage_post: {
+    calculate_line_of_sight_calculate_monostatic_coverage_post: {
         parameters: {
             query: {
                 target_alt: number;
-                rcs: number;
-                probability_threshold: number;
+                max_range: number;
                 azimuth_resolution_degree: number;
             };
             header?: never;
@@ -737,7 +1009,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MonostaticSensor-Input"];
+                "application/json": components["schemas"]["Point"];
             };
         };
         responses: {
@@ -748,6 +1020,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GeoJSONFeature"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    calculate_min_detectable_rcs_calculate_min_detectable_rcs_post: {
+        parameters: {
+            query?: {
+                snr_threshold?: number;
+                doppler_threshold?: number;
+                delay_threshold?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Body_calculate_min_detectable_rcs_calculate_min_detectable_rcs_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number[][][];
                 };
             };
             /** @description Validation Error */
@@ -929,6 +1238,212 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_events_events_get: {
+        parameters: {
+            query?: {
+                t_start?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventMessage"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_geojson_geojson__which__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                which: components["schemas"]["Team"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: components["schemas"]["GeoJSONFeature"];
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    elevationAt_elevation_at__lat___lon__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lat: number;
+                lon: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_fm_transmitters_fm_transmitters_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Transmitter-Output"][];
+                };
+            };
+        };
+    };
+    get_los_distance_line_of_sight_distance__lat1___lon1___alt1___lat2___lon2___alt2__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lat1: number;
+                lon1: number;
+                alt1: number;
+                lat2: number;
+                lon2: number;
+                alt2: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_haversine_distance_haversine_distance__lat1___lon1___lat2___lon2__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lat1: number;
+                lon1: number;
+                lat2: number;
+                lon2: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_terrain_models_terrain_models_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
                 };
             };
         };
