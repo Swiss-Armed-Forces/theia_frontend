@@ -255,7 +255,7 @@ function buildDisplayData(
     throw new Error("This part should never be reached!");
   }
   const redRadars = ["RED", "GOD"].includes(perspective)
-    ? blueSituationalPicture.friendly_radars
+    ? redSituationalPicture.friendly_radars
     : [];
 
   const displayRedTrackInitCoverages = ["RED", "GOD"].includes(perspective)
