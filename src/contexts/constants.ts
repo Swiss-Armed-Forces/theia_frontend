@@ -38,7 +38,7 @@ export const defaultSettings: Settings = {
   minHeight: 0,
   maxHeight: 300_000,
   nHeightBins: 31,
-  coverageAlt: 100_000,
+  coverageAlt: 1_000,
   coverageAzimuthResDegree: 2,
   coverageRangeOnly: true,
   extrapolate: false,
