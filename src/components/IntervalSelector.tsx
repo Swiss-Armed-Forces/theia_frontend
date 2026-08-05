@@ -55,31 +55,40 @@ export default function IntervalSelector({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const bins = linSpace(range[0], range[1], nBins);
+  // The regular linSpace bins occupy nBins-1 equal-height segments; one more
+  // equal-height segment is reserved above them to collect values > range[1]
+  // ("overflow" bin), so the container is divided into nBins segments total.
+  const regularStep = (range[1] - range[0]) / (nBins - 1);
 
-  const valueToPercent = (val: number) =>
-    ((val - range[0]) / (range[1] - range[0])) * 100;
+  const valueToPercent = (val: number) => {
+    if (val === Infinity) return 100;
+    return ((val - range[0]) / regularStep / nBins) * 100;
+  };
 
   const posToSnappedValue = (clientY: number): number => {
     if (!containerRef.current) return range[0];
     const rect = containerRef.current.getBoundingClientRect();
     const fraction = 1 - (clientY - rect.top) / rect.height;
     const clamped = Math.max(0, Math.min(1, fraction));
-    const rawValue = range[0] + clamped * (range[1] - range[0]);
-    const step = (range[1] - range[0]) / (nBins - 1);
-    return Math.round((rawValue - range[0]) / step) * step + range[0];
+    const snappedUnit = Math.round(clamped * nBins);
+    if (snappedUnit >= nBins) return Infinity;
+    return range[0] + snappedUnit * regularStep;
   };
 
   const startDrag = (which: "top" | "bottom") => (e: React.MouseEvent) => {
     e.preventDefault();
-    const step = (range[1] - range[0]) / (nBins - 1);
 
     const onMove = (ev: MouseEvent) => {
       const val = posToSnappedValue(ev.clientY);
       setSelectedRange((prev) => {
         const next: [number, number] =
           which === "top"
-            ? [prev[0], Math.max(val, prev[0] + step)]
-            : [Math.min(val, prev[1] - step), prev[1]];
+            ? [prev[0], Math.max(val, prev[0] + regularStep)]
+            : // The bottom handle can never represent "unbounded" itself.
+              [
+                Math.min(val === Infinity ? range[1] : val, prev[1] - regularStep),
+                prev[1],
+              ];
         onRangeChange?.(next);
         return next;
       });
@@ -123,16 +132,24 @@ export default function IntervalSelector({
                 .length
             }
             isBottom={i === 0}
-            isTop={i === bins.length - 2}
+            isTop={false}
           />
         ))}
+        <IntervalSegment
+          key="overflow"
+          topLabel={`>${Math.round(range[1])}`}
+          bottomLabel=""
+          nInside={values.filter((value) => value >= range[1]).length}
+          isBottom={false}
+          isTop={true}
+        />
       </div>
 
       <div
         className="rangeHandle rangeHandle--top"
         style={{ top: `${topHandleTop}%` }}
         onMouseDown={startDrag("top")}
-        title={`Upper bound: ${Math.round(selectedRange[1])}`}
+        title={`Upper bound: ${selectedRange[1] === Infinity ? "∞" : Math.round(selectedRange[1])}`}
       />
 
       <div

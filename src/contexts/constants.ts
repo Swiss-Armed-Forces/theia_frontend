@@ -26,7 +26,7 @@ export const RED_GEOJSON_COLOR = "#f2a202";
 
 export const defaultSettings: Settings = {
   minHeight: 0,
-  maxHeight: 300_000,
+  maxHeight: 15_000,
   nHeightBins: 31,
   extrapolate: false,
   primaryMuted: "#7ba7e4",
