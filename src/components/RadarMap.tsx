@@ -73,8 +73,6 @@ export default function RadarMap({
           : `TRUTH ${trajectory.target_id}`
       }
       trajectory={trajectory}
-      currentTime={time}
-      isBlue={false}
     />
   ));
 

@@ -1,4 +1,4 @@
-import { Marker, Polyline, Tooltip } from "react-leaflet";
+import { Marker, Tooltip } from "react-leaflet";
 import type { GroundTruth, Point, Track } from "../hooks/useRadarData";
 import ms from "milsymbol";
 import L from "leaflet";
@@ -32,34 +32,10 @@ function TargetMarker({
 
 export default function TrajectoryLayer({
   trajectory,
-  currentTime,
-  isBlue,
 }: {
   trajectory: GroundTruth | Track;
-  currentTime: Date;
-  isBlue: boolean;
 }) {
-  if (trajectory.points.length < 2) {
-    return <div></div>;
-  }
-  const currentPoint = trajectory.points.reduce((closest, point) => {
-    const currentDiff = Math.abs(
-      new Date(point.time).getTime() - currentTime.getTime(),
-    );
-    const closestDiff = Math.abs(
-      new Date(closest.time).getTime() - currentTime.getTime(),
-    );
-    return currentDiff < closestDiff ? point : closest;
-  });
-  const pastPoints = trajectory.points.filter(
-    (point) => new Date(point.time) <= currentTime,
-  );
-  const firstFuturePoint =
-    pastPoints.length > 0 ? [pastPoints[pastPoints.length - 1]] : [];
-  const futurePoints = firstFuturePoint.concat(
-    trajectory.points.filter((point) => new Date(point.time) > currentTime),
-  );
-
+  const currentPoint = trajectory.points[0];
   const id = "target_id" in trajectory ? trajectory.target_id : trajectory.id;
 
   const latStr = currentPoint.lat.toFixed(4);
@@ -106,22 +82,9 @@ export default function TrajectoryLayer({
   );
   return (
     <>
-      <Polyline
-        color={isBlue ? "blue" : "red"}
-        positions={pastPoints.map((p) => [p.lat, p.lon])}
-      >
-        {tooltip}
-      </Polyline>
       <TargetMarker position={currentPoint} sidc={trajectory.sidc}>
         {tooltip}
       </TargetMarker>
-      <Polyline
-        color={isBlue ? "blue" : "red"}
-        positions={futurePoints.map((p) => [p.lat, p.lon])}
-        pathOptions={{ dashArray: "10, 10" }}
-      >
-        {tooltip}
-      </Polyline>
     </>
   );
 }
