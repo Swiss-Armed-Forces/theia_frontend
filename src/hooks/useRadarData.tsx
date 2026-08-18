@@ -56,7 +56,7 @@ function generateTimeWindow(
 
 export default function useRadarData(extrapolate: boolean) {
   const { settings } = useSettings();
-  const [time, setTime] = useState(new Date("2022-06-27T23:01:40"));
+  const [time, setTime] = useState(new Date("1970-01-01T00:00:00Z"));
   const [isPaused, setIsPaused] = useState(true);
   const [speedupFactor, setSpeedupFactor] = useState(1);
   const [blueGroundTruth, setBlueGroundTruth] = useState([] as GroundTruth[]);
