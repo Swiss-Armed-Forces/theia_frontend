@@ -65,6 +65,14 @@ export default function TrajectoryLayer({
           {"target_id" in trajectory ? "Target ID:" : "Track ID:"}
         </span>
         <span>{id}</span>
+        {"name" in trajectory && trajectory.name && (
+          <>
+            <span style={{ textAlign: "right", fontWeight: "bold" }}>
+              Name:
+            </span>
+            <span>{trajectory.name}</span>
+          </>
+        )}
         <span style={{ textAlign: "right", fontWeight: "bold" }}>
           Latitude:
         </span>

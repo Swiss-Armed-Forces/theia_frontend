@@ -398,6 +398,8 @@ export interface components {
         ExtrapolatedGroundtruth: {
             /** Target Id */
             target_id: number;
+            /** Name */
+            name: string;
             /** Points */
             points: components["schemas"]["TrackPoint"][];
             /** Sidc */
