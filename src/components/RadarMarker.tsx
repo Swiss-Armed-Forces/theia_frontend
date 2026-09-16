@@ -1,7 +1,8 @@
-import { Marker, Tooltip } from "react-leaflet";
 import type { Receiver, Sensor, Transmitter } from "../hooks/useRadarData";
 import L from "leaflet";
 import ms from "milsymbol";
+import { useEffect, useRef } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 const friendlyRadarSymbol = new ms.Symbol("10231500002203000000", { size: 24 });
 const friendlyReceiverSymbol = new ms.Symbol("10231500002203000000", {
@@ -45,7 +46,7 @@ function ReceiverDescription({ receiver }: { receiver: Receiver }) {
   );
 
   const alignDecimal = (s: string) =>
-    "\u00A0".repeat(maxBefore - s.indexOf(".")) + s;
+    " ".repeat(maxBefore - s.indexOf(".")) + s;
 
   return (
     <>
@@ -97,7 +98,7 @@ function TransmitterDescription({
   );
 
   const alignDecimal = (s: string) =>
-    "\u00A0".repeat(maxBefore - s.indexOf(".")) + s;
+    " ".repeat(maxBefore - s.indexOf(".")) + s;
 
   const locationInfo = showLocation ? (
     <>
@@ -125,9 +126,81 @@ function TransmitterDescription({
   );
 }
 
-function MonostaticRadarTooltip({ radar }: { radar: Sensor }) {
+function MonostaticRadarTooltipContent({ radar }: { radar: Sensor }) {
   return (
-    <Tooltip direction="top" offset={[0, -10]}>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "auto auto",
+        columnGap: "8px",
+        fontFamily: "monospace",
+      }}
+    >
+      <span style={{ textAlign: "right", fontWeight: "bold" }}>
+        Radar ID:
+      </span>
+      <span>{radar.id}</span>
+      <ReceiverDescription receiver={radar.receiver} />
+      <TransmitterDescription
+        transmitter={radar.transmitter}
+        showLocation={false}
+      />
+    </div>
+  );
+}
+
+const TOOLTIP_OPTS: L.TooltipOptions = { direction: "top", offset: [0, -10] };
+
+export function MonostaticRadarMarker({
+  map,
+  radar,
+  onClick,
+}: {
+  map: L.Map | null;
+  radar: Sensor;
+  onClick: () => void;
+}) {
+  const markerRef = useRef<L.Marker | null>(null);
+
+  // Effect A: create the marker once per map instance.
+  useEffect(() => {
+    if (!map) return;
+    const marker = L.marker(
+      [radar.receiver.point.lat, radar.receiver.point.lon],
+      { icon: radarIcon },
+    );
+    marker.addTo(map);
+    markerRef.current = marker;
+    return () => {
+      marker.remove();
+      markerRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
+
+  // Effect B: push the latest data onto the existing marker every render,
+  // without removing/re-adding it, to avoid flicker on each poll tick.
+  useEffect(() => {
+    const marker = markerRef.current;
+    if (!marker) return;
+    marker.setLatLng([radar.receiver.point.lat, radar.receiver.point.lon]);
+    marker.setIcon(radarIcon);
+    marker.bindTooltip(
+      renderToStaticMarkup(<MonostaticRadarTooltipContent radar={radar} />),
+      TOOLTIP_OPTS,
+    );
+    marker.off("click").on("click", onClick);
+  });
+
+  return null;
+}
+
+function PclReceiverTooltipContent({ receiver }: { receiver: Receiver }) {
+  return (
+    <>
+      <span style={{ fontWeight: "bold" }}>
+        PCL Receiver (ID {receiver.id})
+      </span>
       <div
         style={{
           display: "grid",
@@ -136,102 +209,123 @@ function MonostaticRadarTooltip({ radar }: { radar: Sensor }) {
           fontFamily: "monospace",
         }}
       >
-        <span style={{ textAlign: "right", fontWeight: "bold" }}>
-          Radar ID:
-        </span>
-        <span>{radar.id}</span>
-        <ReceiverDescription receiver={radar.receiver} />
-        <TransmitterDescription
-          transmitter={radar.transmitter}
-          showLocation={false}
-        />
+        <ReceiverDescription receiver={receiver} />
       </div>
-    </Tooltip>
+    </>
   );
 }
 
-export function MonostaticRadarMarker({
-  radar,
-  onClick,
+function PclReceiverMarker({
+  map,
+  receiver,
 }: {
-  radar: Sensor;
-  onClick: () => void;
+  map: L.Map | null;
+  receiver: Receiver;
+}) {
+  const markerRef = useRef<L.Marker | null>(null);
+
+  useEffect(() => {
+    if (!map) return;
+    const marker = L.marker([receiver.point.lat, receiver.point.lon], {
+      icon: receiverIcon,
+    });
+    marker.addTo(map);
+    markerRef.current = marker;
+    return () => {
+      marker.remove();
+      markerRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
+
+  useEffect(() => {
+    const marker = markerRef.current;
+    if (!marker) return;
+    marker.setLatLng([receiver.point.lat, receiver.point.lon]);
+    marker.setIcon(receiverIcon);
+    marker.bindTooltip(
+      renderToStaticMarkup(<PclReceiverTooltipContent receiver={receiver} />),
+      TOOLTIP_OPTS,
+    );
+  });
+
+  return null;
+}
+
+function PclTransmitterTooltipContent({
+  transmitter,
+}: {
+  transmitter: Transmitter;
 }) {
   return (
-    <Marker
-      position={[radar.receiver.point.lat, radar.receiver.point.lon]}
-      icon={radarIcon}
-      eventHandlers={{
-        click: onClick,
-      }}
-    >
-      <MonostaticRadarTooltip radar={radar} />
-    </Marker>
-  );
-}
-
-function PclReceiverMarker({ receiver }: { receiver: Receiver }) {
-  return (
-    <Marker
-      position={[receiver.point.lat, receiver.point.lon]}
-      icon={receiverIcon}
-    >
-      <Tooltip direction="top" offset={[0, -10]}>
-        <span style={{ fontWeight: "bold" }}>
-          PCL Receiver (ID {receiver.id})
-        </span>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "auto auto",
-            columnGap: "8px",
-            fontFamily: "monospace",
-          }}
-        >
-          <ReceiverDescription receiver={receiver} />
-        </div>
-      </Tooltip>
-    </Marker>
+    <>
+      <span style={{ fontWeight: "bold" }}>
+        PCL Transmitter (ID {transmitter.id})
+      </span>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "auto auto",
+          columnGap: "8px",
+          fontFamily: "monospace",
+        }}
+      >
+        <TransmitterDescription transmitter={transmitter} showLocation={true} />
+      </div>
+    </>
   );
 }
 
 function PclTransmitterMarker({
+  map,
   receiver: transmitter,
 }: {
+  map: L.Map | null;
   receiver: Transmitter;
 }) {
-  return (
-    <Marker
-      position={[transmitter.point.lat, transmitter.point.lon]}
-      icon={transmitterIcon}
-    >
-      <Tooltip direction="top" offset={[0, -10]}>
-        <span style={{ fontWeight: "bold" }}>
-          PCL Transmitter (ID {transmitter.id})
-        </span>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "auto auto",
-            columnGap: "8px",
-            fontFamily: "monospace",
-          }}
-        >
-          <TransmitterDescription
-            transmitter={transmitter}
-            showLocation={true}
-          />
-        </div>
-      </Tooltip>
-    </Marker>
-  );
+  const markerRef = useRef<L.Marker | null>(null);
+
+  useEffect(() => {
+    if (!map) return;
+    const marker = L.marker([transmitter.point.lat, transmitter.point.lon], {
+      icon: transmitterIcon,
+    });
+    marker.addTo(map);
+    markerRef.current = marker;
+    return () => {
+      marker.remove();
+      markerRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
+
+  useEffect(() => {
+    const marker = markerRef.current;
+    if (!marker) return;
+    marker.setLatLng([transmitter.point.lat, transmitter.point.lon]);
+    marker.setIcon(transmitterIcon);
+    marker.bindTooltip(
+      renderToStaticMarkup(
+        <PclTransmitterTooltipContent transmitter={transmitter} />,
+      ),
+      TOOLTIP_OPTS,
+    );
+  });
+
+  return null;
 }
 
-export function PclSensorMarkers({ sensor }: { sensor: Sensor }) {
+export function PclSensorMarkers({
+  map,
+  sensor,
+}: {
+  map: L.Map | null;
+  sensor: Sensor;
+}) {
   return (
     <>
-      <PclReceiverMarker receiver={sensor.receiver} />
-      <PclTransmitterMarker receiver={sensor.transmitter} />
+      <PclReceiverMarker map={map} receiver={sensor.receiver} />
+      <PclTransmitterMarker map={map} receiver={sensor.transmitter} />
     </>
   );
 }

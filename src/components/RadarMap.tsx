@@ -1,5 +1,4 @@
-import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
-import { Map } from "leaflet";
+import L from "leaflet";
 import type {
   GeoJSONFeature,
   GroundTruth,
@@ -11,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { MonostaticRadarMarker, PclSensorMarkers } from "./RadarMarker";
 import TrajectoryLayer from "./TrajectoryLayer";
 import ClickPopup from "./ClickPopup";
+import GeoJsonLayer from "./GeoJsonLayer";
 import { extractState } from "../util/utils";
 import IntervalSelector from "./IntervalSelector";
 import { useSettings } from "../hooks/useSettings";
@@ -38,11 +38,45 @@ export default function RadarMap({
   resizeTrigger?: boolean;
 }) {
   const { settings } = useSettings();
-  const mapRef = useRef(null as Map | null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const [map, setMap] = useState<L.Map | null>(null);
 
   useEffect(() => {
-    mapRef.current?.invalidateSize();
-  }, [resizeTrigger]);
+    if (containerRef.current && !mapInstanceRef.current) {
+      const instance = L.map(containerRef.current).setView(
+        [47.374444, 8.541111],
+        9,
+      );
+      mapInstanceRef.current = instance;
+      setMap(instance);
+    }
+    return () => {
+      const instance = mapInstanceRef.current;
+      if (instance) {
+        instance.remove();
+        mapInstanceRef.current = null;
+        setMap(null);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    map?.invalidateSize();
+  }, [map, resizeTrigger]);
+
+  useEffect(() => {
+    if (!map) return;
+    const tileLayer = L.tileLayer(settings.tileServerConfig.url, {
+      attribution: settings.tileServerConfig.attribution,
+      subdomains: ["a", "b", "c"],
+    });
+    tileLayer.addTo(map);
+    return () => {
+      tileLayer.remove();
+    };
+  }, [map, settings.tileServerConfig.url, settings.tileServerConfig.attribution]);
+
   const [visibleAltRange, setVisibleAltRange] = useState<[number, number]>([
     settings.minHeight,
     settings.maxHeight,
@@ -56,6 +90,7 @@ export default function RadarMap({
   const monostaticRadarMarkers = blueMonostaticRadars.map((radar, i) => (
     <MonostaticRadarMarker
       key={i}
+      map={map}
       radar={radar}
       onClick={function (): void {
         throw new Error("Function not implemented.");
@@ -63,7 +98,7 @@ export default function RadarMap({
     />
   ));
   const pclSensorMarkers = bluePclSensors.map((sensor, i) => (
-    <PclSensorMarkers key={i} sensor={sensor} />
+    <PclSensorMarkers key={i} map={map} sensor={sensor} />
   ));
   const groundTruthLayers = visibleTrajectories.map((trajectory) => (
     <TrajectoryLayer
@@ -72,6 +107,7 @@ export default function RadarMap({
           ? `TRACK ${trajectory.id}`
           : `TRUTH ${trajectory.target_id}`
       }
+      map={map}
       trajectory={trajectory}
     />
   ));
@@ -82,23 +118,23 @@ export default function RadarMap({
   const blueGeoJsonLayers = Object.entries(blueGeoJson)
     .filter(([key]) => !hiddenBlueKeys.has(key))
     .map(([key, feature]) => (
-      <GeoJSON
+      <GeoJsonLayer
         key={key}
+        map={map}
         data={feature}
-        interactive={true}
         style={blueGeoJsonStyle}
-        onEachFeature={(_feature, layer) => layer.bindTooltip(key)}
+        tooltipLabel={key}
       />
     ));
   const redGeoJsonLayers = Object.entries(redGeoJson)
     .filter(([key]) => !hiddenRedKeys.has(key))
     .map(([key, feature]) => (
-      <GeoJSON
+      <GeoJsonLayer
         key={key}
+        map={map}
         data={feature}
-        interactive={true}
         style={redGeoJsonStyle}
-        onEachFeature={(_feature, layer) => layer.bindTooltip(key)}
+        tooltipLabel={key}
       />
     ));
 
@@ -121,28 +157,20 @@ export default function RadarMap({
         range={[settings.minHeight, settings.maxHeight]}
         nBins={settings.nHeightBins}
       />
-      <MapContainer
-        center={[47.374444, 8.541111]}
-        zoom={9}
-        ref={mapRef}
+      <div
+        ref={containerRef}
         style={{
           height: "100%",
           width: "100%",
           flex: 18,
         }}
-      >
-        <TileLayer
-          attribution={settings.tileServerConfig.attribution}
-          url={settings.tileServerConfig.url}
-          subdomains={["a", "b", "c"]}
-        />
-        {blueGeoJsonLayers}
-        {redGeoJsonLayers}
-        {monostaticRadarMarkers}
-        {pclSensorMarkers}
-        {groundTruthLayers}
-        <ClickPopup />
-      </MapContainer>
+      />
+      {blueGeoJsonLayers}
+      {redGeoJsonLayers}
+      {monostaticRadarMarkers}
+      {pclSensorMarkers}
+      {groundTruthLayers}
+      <ClickPopup map={map} />
       <div
         style={{
           position: "absolute",
