@@ -64,8 +64,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Calculate Line Of Sight */
-        post: operations["calculate_line_of_sight_calculate_monostatic_coverage_post"];
+        /** Calculate Monostatic Coverage */
+        post: operations["calculate_monostatic_coverage_calculate_monostatic_coverage_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -351,6 +351,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/default_monostatic_sensor_configurations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Default Monostatic Sensor Configurations */
+        get: operations["get_default_monostatic_sensor_configurations_default_monostatic_sensor_configurations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -384,6 +401,14 @@ export interface components {
             /** Rcs */
             rcs: number;
         };
+        /** DefaultMonostaticSensorConfiguration */
+        DefaultMonostaticSensorConfiguration: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            sensor: components["schemas"]["MonostaticSensor-Output"];
+        };
         /** EventMessage */
         EventMessage: {
             /**
@@ -404,6 +429,7 @@ export interface components {
             points: components["schemas"]["TrackPoint"][];
             /** Sidc */
             sidc: string;
+            info: components["schemas"]["TargetInfo"];
         };
         /** ExtrapolatedSituationalPicture */
         ExtrapolatedSituationalPicture: {
@@ -425,6 +451,7 @@ export interface components {
             points: components["schemas"]["TrackPoint"][];
             /** Sidc */
             sidc: string;
+            info: components["schemas"]["TargetInfo"];
             receiver?: components["schemas"]["Receiver-Output"] | null;
             transmitter?: components["schemas"]["Transmitter-Output"] | null;
         };
@@ -531,6 +558,12 @@ export interface components {
             receiver: components["schemas"]["Receiver-Output"];
             error_model: components["schemas"]["MonostaticRadarMeasurementModel"];
         };
+        /**
+         * Party
+         * @description Party a target belongs to.
+         * @enum {string}
+         */
+        Party: "UNKNOWN" | "BLUE" | "RED" | "NEUTRAL";
         /**
          * PclMeasurementModel
          * @description Measurement model for PCL detections.
@@ -749,13 +782,48 @@ export interface components {
              * @default
              */
             name: string;
-            /** Sidc */
-            sidc: string;
+            info: components["schemas"]["TargetInfo"];
+            /**
+             * Is Damaged
+             * @default false
+             */
+            is_damaged: boolean;
             point: components["schemas"]["Point"];
             cross_section_model: components["schemas"]["ConstantRcsModel"];
             velocity: components["schemas"]["Velocity"];
             receiver?: components["schemas"]["Receiver-Output"] | null;
             transmitter?: components["schemas"]["Transmitter-Output"] | null;
+            /**
+             * Sidc
+             * @description Symbol identification coding according to NATO APP-6D
+             */
+            readonly sidc: string;
+        };
+        /**
+         * TargetCategory
+         * @description Kind of a physical entity, independent of its party.
+         * @enum {string}
+         */
+        TargetCategory: "UNKNOWN" | "SENSOR" | "CRITICAL_INFRASTRUCTURE" | "INTERCEPTOR" | "GBAD" | "DRONE_CLASS_I" | "DRONE_CLASS_II" | "DRONE_CLASS_III" | "SHORT_RANGE_BALLISTIC_MISSILE" | "MEDIUM_RANGE_BALLISTIC_MISSILE" | "INTERMEDIATE_RANGE_BALLISTIC_MISSILE" | "CRUISE_MISSILE" | "FIGHTER_JET";
+        /**
+         * TargetInfo
+         * @description Meta-information about a target.
+         *
+         *     Categorical information lives here rather than in `Target`, so that new
+         *     criteria can be added without touching `Target` (open-closed principle).
+         */
+        TargetInfo: {
+            /** Sidc Template */
+            sidc_template: string;
+            /** @default UNKNOWN */
+            category: components["schemas"]["TargetCategory"];
+            /**
+             * Tags
+             * @default []
+             */
+            tags: string[];
+            /** @default UNKNOWN */
+            party: components["schemas"]["Party"];
         };
         /**
          * Team
@@ -998,12 +1066,14 @@ export interface operations {
             };
         };
     };
-    calculate_line_of_sight_calculate_monostatic_coverage_post: {
+    calculate_monostatic_coverage_calculate_monostatic_coverage_post: {
         parameters: {
             query: {
                 target_alt: number;
-                max_range: number;
-                azimuth_resolution_degree: number;
+                target_rcs: number;
+                probability_threshold: number;
+                lat_res: number;
+                lon_res: number;
             };
             header?: never;
             path?: never;
@@ -1011,7 +1081,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Point"];
+                "application/json": components["schemas"]["MonostaticSensor-Input"];
             };
         };
         responses: {
@@ -1021,7 +1091,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GeoJSONFeature"];
+                    "application/json": components["schemas"]["GeoJSONFeature"][];
                 };
             };
             /** @description Validation Error */
@@ -1446,6 +1516,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": string[];
+                };
+            };
+        };
+    };
+    get_default_monostatic_sensor_configurations_default_monostatic_sensor_configurations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DefaultMonostaticSensorConfiguration"][];
                 };
             };
         };
