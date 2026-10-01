@@ -35,9 +35,14 @@ Serves the frontend at `http://localhost:5173`. Stop it with `Ctrl+C`.
 
 ### Regenerating backend communication types
 
-The backend's OpenAPI schema is used to generate typed API bindings:
+The backend's OpenAPI schema is used to generate typed API bindings. Export it
+from the backend repo, then regenerate the types:
 
 ```bash
+# in theia_backend
+python scripts/export_openapi.py ../theia_frontend/src/hooks/openapi.json
+
+# in theia_frontend
 cd src/hooks/
 npx openapi-typescript openapi.json -o schema.d.ts
 ```
