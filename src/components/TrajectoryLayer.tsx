@@ -60,6 +60,12 @@ function TargetMarker({
   return null;
 }
 
+// "SHORT_RANGE_BALLISTIC_MISSILE" -> "Short range ballistic missile"
+function formatCategory(category: string): string {
+  const words = category.toLowerCase().replaceAll("_", " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
 export default function TrajectoryLayer({
   map,
   trajectory,
@@ -102,6 +108,14 @@ export default function TrajectoryLayer({
             Name:
           </span>
           <span>{trajectory.name}</span>
+        </>
+      )}
+      {trajectory.info.category !== "UNKNOWN" && (
+        <>
+          <span style={{ textAlign: "right", fontWeight: "bold" }}>
+            Category:
+          </span>
+          <span>{formatCategory(trajectory.info.category)}</span>
         </>
       )}
       <span style={{ textAlign: "right", fontWeight: "bold" }}>

@@ -5,7 +5,6 @@ export type GeoJSONPolygon = Polygon;
 export type GeoJSONFeature = Feature<Polygon | MultiPolygon>;
 import { useSettings } from "./useSettings";
 import type { Perspective } from "../contexts/SettingsContext";
-import { SIDC } from "../contexts/constants";
 // import createFetchClient from "openapi-fetch";
 // import createClient from "openapi-react-query";
 
@@ -19,6 +18,7 @@ export type Point = components["schemas"]["Point"];
 export type Track = components["schemas"]["ExtrapolatedTrack"];
 export type GroundTruth = components["schemas"]["ExtrapolatedGroundtruth"];
 export type Team = components["schemas"]["Team"];
+export type TargetInfo = components["schemas"]["TargetInfo"];
 export type Sensor = MonostaticSensor | PclSensor;
 
 export type DisplayData = {
@@ -138,6 +138,15 @@ export default function useRadarData(extrapolate: boolean) {
   };
 }
 
+// Radars, PCL receivers and transmitters are drawn as radar markers already.
+function isSensorSite(info: TargetInfo): boolean {
+  return (
+    info.category === "SENSOR" ||
+    info.tags.includes("pcl_receiver") ||
+    info.tags.includes("transmitter")
+  );
+}
+
 function buildDisplayData(
   perspective: Perspective,
   blueSituationalPicture: SituationalPicture,
@@ -151,9 +160,7 @@ function buildDisplayData(
   if (perspective === "RED") {
     blueTrajectories = redSituationalPicture.enemy_tracks;
   } else if (["BLUE", "GOD"].includes(perspective)) {
-    blueTrajectories = blueGroundTruth.filter(
-      (gt) => ![SIDC.BLUE_RADAR, SIDC.GREEN_TRANSMITTER].includes(gt.sidc),
-    );
+    blueTrajectories = blueGroundTruth.filter((gt) => !isSensorSite(gt.info));
   } else {
     throw new Error("This part should never be reached!");
   }
