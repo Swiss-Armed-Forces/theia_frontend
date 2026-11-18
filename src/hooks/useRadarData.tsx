@@ -20,6 +20,22 @@ export type GroundTruth = components["schemas"]["ExtrapolatedGroundtruth"];
 export type Team = components["schemas"]["Team"];
 export type TargetInfo = components["schemas"]["TargetInfo"];
 export type Sensor = MonostaticSensor | PclSensor;
+// Any sensor the backend may report as a friendly radar.
+type ReportedSensor = SituationalPicture["friendly_radars"][number];
+
+// The backend's schema allows PET, visual and intel sensors as friendly
+// radars, too, although it currently only sends monostatic radars and PCL
+// sensors. Only those two can be drawn: they are told apart by their error
+// model. TODO: Remove once the backend's API declares only what it sends.
+function isDrawableSensor(sensor: ReportedSensor): sensor is Sensor {
+  if (!("error_model" in sensor)) {
+    return false; // Visual and intel sensors
+  }
+  return (
+    "min_range_uncertainty" in sensor.error_model || // monostatic
+    "min_bistatic_range_uncertainty" in sensor.error_model // PCL
+  );
+}
 
 export type DisplayData = {
   blueRadars: (MonostaticSensor | PclSensor)[];
@@ -165,7 +181,7 @@ function buildDisplayData(
     throw new Error("This part should never be reached!");
   }
   const blueRadars = ["BLUE", "GOD"].includes(perspective)
-    ? blueSituationalPicture.friendly_radars
+    ? blueSituationalPicture.friendly_radars.filter(isDrawableSensor)
     : [];
 
   const displayBlueGeoJson = ["BLUE", "GOD"].includes(perspective)
@@ -181,7 +197,7 @@ function buildDisplayData(
     throw new Error("This part should never be reached!");
   }
   const redRadars = ["RED", "GOD"].includes(perspective)
-    ? redSituationalPicture.friendly_radars
+    ? redSituationalPicture.friendly_radars.filter(isDrawableSensor)
     : [];
 
   const displayRedGeoJson = ["RED", "GOD"].includes(perspective)

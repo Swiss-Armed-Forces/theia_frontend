@@ -1,7 +1,3 @@
-import { useSettings } from "../hooks/useSettings";
-import ms from "milsymbol";
-import RadarIcon from "../icons/RadarIcon";
-
 export default function StatisticsDisplay({
   numberOfFriendlyRadars,
   numberOfEnemyTargets,
