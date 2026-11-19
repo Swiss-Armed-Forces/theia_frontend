@@ -18,6 +18,7 @@ function TargetMarker({
   sidc: string;
 }) {
   const markerRef = useRef<L.Marker | null>(null);
+  const sidcRef = useRef<string | null>(null);
 
   // Effect A: create the marker once per map instance.
   useEffect(() => {
@@ -30,8 +31,12 @@ function TargetMarker({
       iconAnchor: [12, 12], // center the icon
     });
     const marker = L.marker([position.lat, position.lon], { icon });
+    // Bind the tooltip once; Effect B only updates its content in place.
+    // Re-binding on every poll tick would close an open (hovered) tooltip.
+    marker.bindTooltip("", TOOLTIP_OPTS);
     marker.addTo(map);
     markerRef.current = marker;
+    sidcRef.current = sidc;
     return () => {
       marker.remove();
       markerRef.current = null;
@@ -45,16 +50,20 @@ function TargetMarker({
     const marker = markerRef.current;
     if (!marker) return;
     marker.setLatLng([position.lat, position.lon]);
-    const symbol = new ms.Symbol(sidc, { size: 24 });
-    marker.setIcon(
-      L.divIcon({
-        html: symbol.asSVG(),
-        className: "",
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
-      }),
-    );
-    marker.bindTooltip(renderToStaticMarkup(tooltip), TOOLTIP_OPTS);
+    // setIcon() replaces the icon's DOM element, so only do it on change.
+    if (sidcRef.current !== sidc) {
+      const symbol = new ms.Symbol(sidc, { size: 24 });
+      marker.setIcon(
+        L.divIcon({
+          html: symbol.asSVG(),
+          className: "",
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+        }),
+      );
+      sidcRef.current = sidc;
+    }
+    marker.setTooltipContent(renderToStaticMarkup(tooltip));
   });
 
   return null;

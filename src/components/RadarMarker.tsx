@@ -169,6 +169,9 @@ export function MonostaticRadarMarker({
       [radar.receiver.point.lat, radar.receiver.point.lon],
       { icon: radarIcon },
     );
+    // Bind the tooltip once; the update effect only changes its content.
+    // Re-binding on every poll tick would close an open (hovered) tooltip.
+    marker.bindTooltip("", TOOLTIP_OPTS);
     marker.addTo(map);
     markerRef.current = marker;
     return () => {
@@ -184,10 +187,8 @@ export function MonostaticRadarMarker({
     const marker = markerRef.current;
     if (!marker) return;
     marker.setLatLng([radar.receiver.point.lat, radar.receiver.point.lon]);
-    marker.setIcon(radarIcon);
-    marker.bindTooltip(
+    marker.setTooltipContent(
       renderToStaticMarkup(<MonostaticRadarTooltipContent radar={radar} />),
-      TOOLTIP_OPTS,
     );
     marker.off("click").on("click", onClick);
   });
@@ -229,6 +230,9 @@ function PclReceiverMarker({
     const marker = L.marker([receiver.point.lat, receiver.point.lon], {
       icon: receiverIcon,
     });
+    // Bind the tooltip once; the update effect only changes its content.
+    // Re-binding on every poll tick would close an open (hovered) tooltip.
+    marker.bindTooltip("", TOOLTIP_OPTS);
     marker.addTo(map);
     markerRef.current = marker;
     return () => {
@@ -242,10 +246,8 @@ function PclReceiverMarker({
     const marker = markerRef.current;
     if (!marker) return;
     marker.setLatLng([receiver.point.lat, receiver.point.lon]);
-    marker.setIcon(receiverIcon);
-    marker.bindTooltip(
+    marker.setTooltipContent(
       renderToStaticMarkup(<PclReceiverTooltipContent receiver={receiver} />),
-      TOOLTIP_OPTS,
     );
   });
 
@@ -290,6 +292,9 @@ function PclTransmitterMarker({
     const marker = L.marker([transmitter.point.lat, transmitter.point.lon], {
       icon: transmitterIcon,
     });
+    // Bind the tooltip once; the update effect only changes its content.
+    // Re-binding on every poll tick would close an open (hovered) tooltip.
+    marker.bindTooltip("", TOOLTIP_OPTS);
     marker.addTo(map);
     markerRef.current = marker;
     return () => {
@@ -303,12 +308,10 @@ function PclTransmitterMarker({
     const marker = markerRef.current;
     if (!marker) return;
     marker.setLatLng([transmitter.point.lat, transmitter.point.lon]);
-    marker.setIcon(transmitterIcon);
-    marker.bindTooltip(
+    marker.setTooltipContent(
       renderToStaticMarkup(
         <PclTransmitterTooltipContent transmitter={transmitter} />,
       ),
-      TOOLTIP_OPTS,
     );
   });
 
