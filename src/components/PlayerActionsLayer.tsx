@@ -1,9 +1,15 @@
 import type L from "leaflet";
 import { useEffect, useRef, useState } from "react";
-import type { CampSiteState, TransportTime } from "../hooks/useGameData";
-import type { Team } from "../hooks/useRadarData";
+import {
+  postAction,
+  type ActionRequest,
+  type CampSiteState,
+  type TransportTime,
+} from "../hooks/useGameData";
+import type { Point, Team, Track } from "../hooks/useRadarData";
 import type { ActionKind } from "../util/campSites";
 import ActionPopup from "./ActionPopup";
+import AttackTargetsLayer from "./AttackTargetsLayer";
 import CampSiteMarker from "./CampSiteMarker";
 
 /** An action the player has started and whose target is being picked. */
@@ -25,6 +31,7 @@ export default function PlayerActionsLayer({
   team,
   campSites,
   transportTimes,
+  attackTargets,
   actionMode,
   onActionModeChange,
 }: {
@@ -32,6 +39,8 @@ export default function PlayerActionsLayer({
   team: Team;
   campSites: CampSiteState[];
   transportTimes: TransportTime[];
+  /** Enemy tracks the side can attack */
+  attackTargets: Track[];
   /** Current action mode; only valid while its camp site is alive */
   actionMode: ActionMode | null;
   onActionModeChange: (mode: ActionMode | null) => void;
@@ -77,6 +86,20 @@ export default function PlayerActionsLayer({
     onActionModeChange({ kind, siteId: site.id });
   }
 
+  // Leave the action mode right away: the outcome arrives as an event.
+  function submit(action: ActionRequest) {
+    onActionModeChange(null);
+    postAction(team, action).catch((error: unknown) => {
+      // TODO(WP5): show failures in the event log.
+      console.error(error);
+    });
+  }
+
+  function launchAt(destination: Point) {
+    if (!actionMode) return;
+    submit({ type: "launch", site_id: actionMode.siteId, destination });
+  }
+
   return (
     <>
       {campSites.map((site) => (
@@ -98,6 +121,14 @@ export default function PlayerActionsLayer({
           onClose={() => setPopupRequest(null)}
         />
       )}
+      {actionMode?.kind === "attack" && modeSite && (
+        <AttackTargetsLayer
+          map={map}
+          team={team}
+          targets={attackTargets}
+          onPick={launchAt}
+        />
+      )}
       {actionMode && modeSite && (
         <div className="action-banner">
           <span>
@@ -106,6 +137,9 @@ export default function PlayerActionsLayer({
             </strong>{" "}
             from {modeSite.name}: {BANNER_TEXT[actionMode.kind]}. Esc or
             right-click to cancel.
+            {actionMode.kind === "attack" && attackTargets.length === 0 && (
+              <> No enemy ground targets known.</>
+            )}
           </span>
           <button
             className="action-button"

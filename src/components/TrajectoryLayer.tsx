@@ -4,6 +4,7 @@ import L from "leaflet";
 import { useEffect, useRef, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { milsymbolIcon } from "../util/milsymbolIcon";
+import { formatCategory } from "../util/utils";
 
 const TOOLTIP_OPTS: L.TooltipOptions = { direction: "top", offset: [0, -10] };
 
@@ -54,12 +55,6 @@ function TargetMarker({
   });
 
   return null;
-}
-
-// "SHORT_RANGE_BALLISTIC_MISSILE" -> "Short range ballistic missile"
-function formatCategory(category: string): string {
-  const words = category.toLowerCase().replaceAll("_", " ");
-  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 export default function TrajectoryLayer({

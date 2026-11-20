@@ -6,7 +6,10 @@ import SettingsForm from "./SettingsForm";
 import TopBar from "./TopBar";
 import "./Gui.css";
 import { arePointsEqual } from "../util/utils";
-import useRadarData from "../hooks/useRadarData";
+import useRadarData, {
+  type GroundTruth,
+  type Track,
+} from "../hooks/useRadarData";
 import useGameData from "../hooks/useGameData";
 import { useSettings } from "../hooks/useSettings";
 
@@ -56,6 +59,19 @@ export default function Gui() {
   );
 
   const trajectories = displayData.redTargets.concat(displayData.blueTargets);
+
+  // Attack targets: the enemy ground tracks of the visible side's
+  // situational picture (no ground truth, so fog of war is respected).
+  const enemyTrajectories: (Track | GroundTruth)[] =
+    team === "BLUE"
+      ? displayData.redTargets
+      : team === "RED"
+        ? displayData.blueTargets
+        : [];
+  const attackTargets = enemyTrajectories.filter(
+    (trajectory): trajectory is Track =>
+      "id" in trajectory && !trajectory.info.is_airborne,
+  );
 
   const sidebarContent = (
     <SettingsForm
@@ -107,6 +123,7 @@ export default function Gui() {
             team={team}
             campSites={gameData.campSites}
             transportTimes={gameData.transportTimes}
+            attackTargets={attackTargets}
           />
         </main>
       </div>

@@ -31,6 +31,7 @@ export default function RadarMap({
   team,
   campSites,
   transportTimes,
+  attackTargets,
   resizeTrigger,
 }: {
   time: Date;
@@ -47,6 +48,8 @@ export default function RadarMap({
   campSites: CampSiteState[];
   /** Own transport routes; only present if the side is user-controlled */
   transportTimes: TransportTime[];
+  /** Enemy tracks the visible side can attack */
+  attackTargets: Track[];
   resizeTrigger?: boolean;
 }) {
   const { settings } = useSettings();
@@ -211,6 +214,7 @@ export default function RadarMap({
           team={team}
           campSites={campSites}
           transportTimes={transportTimes}
+          attackTargets={attackTargets}
           actionMode={activeActionMode}
           onActionModeChange={setActionMode}
         />
