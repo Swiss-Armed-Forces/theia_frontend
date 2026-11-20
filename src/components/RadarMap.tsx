@@ -3,12 +3,15 @@ import type {
   GeoJSONFeature,
   GroundTruth,
   Sensor,
+  Team,
   Track,
 } from "../hooks/useRadarData";
+import type { CampSiteState } from "../hooks/useGameData";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState } from "react";
 import { MonostaticRadarMarker, PclSensorMarkers } from "./RadarMarker";
 import TrajectoryLayer from "./TrajectoryLayer";
+import CampSiteMarker from "./CampSiteMarker";
 import ClickPopup from "./ClickPopup";
 import GeoJsonLayer from "./GeoJsonLayer";
 import { extractState } from "../util/utils";
@@ -24,7 +27,9 @@ export default function RadarMap({
   redGeoJson,
   hiddenBlueKeys,
   hiddenRedKeys,
-  trajectories,
+  trajectories: allTrajectories,
+  team,
+  campSites,
   resizeTrigger,
 }: {
   time: Date;
@@ -35,6 +40,10 @@ export default function RadarMap({
   hiddenBlueKeys: Set<string>;
   hiddenRedKeys: Set<string>;
   trajectories: (GroundTruth | Track)[];
+  /** Visible side; `null` in the GOD perspective */
+  team: Team | null;
+  /** Own camp sites; only present if the visible side is user-controlled */
+  campSites: CampSiteState[];
   resizeTrigger?: boolean;
 }) {
   const { settings } = useSettings();
@@ -77,6 +86,14 @@ export default function RadarMap({
     };
   }, [map, settings.tileServerConfig.url, settings.tileServerConfig.attribution]);
 
+  // Camp sites are drawn by their own markers: drop their ground truth.
+  const campSiteTargetIds = new Set(campSites.map((site) => site.target_id));
+  const trajectories = allTrajectories.filter(
+    (trajectory) =>
+      !("target_id" in trajectory) ||
+      !campSiteTargetIds.has(trajectory.target_id),
+  );
+
   const [visibleAltRange, setVisibleAltRange] = useState<[number, number]>([
     settings.minHeight,
     settings.maxHeight,
@@ -97,6 +114,12 @@ export default function RadarMap({
       }}
     />
   ));
+  const campSiteMarkers =
+    team === null
+      ? []
+      : campSites.map((site) => (
+          <CampSiteMarker key={site.id} map={map} site={site} team={team} />
+        ));
   const pclSensorMarkers = bluePclSensors.map((sensor, i) => (
     <PclSensorMarkers key={i} map={map} sensor={sensor} />
   ));
@@ -170,6 +193,7 @@ export default function RadarMap({
       {monostaticRadarMarkers}
       {pclSensorMarkers}
       {groundTruthLayers}
+      {campSiteMarkers}
       <ClickPopup map={map} />
       <div
         style={{

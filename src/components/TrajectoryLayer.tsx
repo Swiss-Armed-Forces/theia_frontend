@@ -3,6 +3,7 @@ import ms from "milsymbol";
 import L from "leaflet";
 import { useEffect, useRef, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { milsymbolIcon } from "../util/milsymbolIcon";
 
 const TOOLTIP_OPTS: L.TooltipOptions = { direction: "top", offset: [0, -10] };
 
@@ -23,13 +24,7 @@ function TargetMarker({
   // Effect A: create the marker once per map instance.
   useEffect(() => {
     if (!map) return;
-    const symbol = new ms.Symbol(sidc, { size: 24 });
-    const icon = L.divIcon({
-      html: symbol.asSVG(),
-      className: "", // remove default 'leaflet-div-icon' styles if needed
-      iconSize: [24, 24],
-      iconAnchor: [12, 12], // center the icon
-    });
+    const icon = milsymbolIcon(new ms.Symbol(sidc, { size: 24 }));
     const marker = L.marker([position.lat, position.lon], { icon });
     // Bind the tooltip once; Effect B only updates its content in place.
     // Re-binding on every poll tick would close an open (hovered) tooltip.
@@ -52,15 +47,7 @@ function TargetMarker({
     marker.setLatLng([position.lat, position.lon]);
     // setIcon() replaces the icon's DOM element, so only do it on change.
     if (sidcRef.current !== sidc) {
-      const symbol = new ms.Symbol(sidc, { size: 24 });
-      marker.setIcon(
-        L.divIcon({
-          html: symbol.asSVG(),
-          className: "",
-          iconSize: [24, 24],
-          iconAnchor: [12, 12],
-        }),
-      );
+      marker.setIcon(milsymbolIcon(new ms.Symbol(sidc, { size: 24 })));
       sidcRef.current = sidc;
     }
     marker.setTooltipContent(renderToStaticMarkup(tooltip));

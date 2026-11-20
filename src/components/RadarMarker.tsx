@@ -3,6 +3,7 @@ import L from "leaflet";
 import ms from "milsymbol";
 import { useEffect, useRef } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { milsymbolIcon } from "../util/milsymbolIcon";
 
 const friendlyRadarSymbol = new ms.Symbol("10231500002203000000", { size: 24 });
 const friendlyReceiverSymbol = new ms.Symbol("10231500002203000000", {
@@ -13,26 +14,11 @@ const civilTransmitterSymbol = new ms.Symbol("10242000001212010000", {
   size: 24,
 });
 
-const radarIcon = L.divIcon({
-  html: friendlyRadarSymbol.asSVG(),
-  className: "", // remove default 'leaflet-div-icon' styles if needed
-  iconSize: [24, 24],
-  iconAnchor: [12, 12], // center the icon
-});
+const radarIcon = milsymbolIcon(friendlyRadarSymbol);
 
-const receiverIcon = L.divIcon({
-  html: friendlyReceiverSymbol.asSVG(),
-  className: "", // remove default 'leaflet-div-icon' styles if needed
-  iconSize: [24, 24],
-  iconAnchor: [12, 12], // center the icon
-});
+const receiverIcon = milsymbolIcon(friendlyReceiverSymbol);
 
-const transmitterIcon = L.divIcon({
-  html: civilTransmitterSymbol.asSVG(),
-  className: "", // remove default 'leaflet-div-icon' styles if needed
-  iconSize: [24, 24],
-  iconAnchor: [12, 12], // center the icon
-});
+const transmitterIcon = milsymbolIcon(civilTransmitterSymbol);
 
 function ReceiverDescription({ receiver }: { receiver: Receiver }) {
   const latStr = receiver.point.lat.toFixed(4);

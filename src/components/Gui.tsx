@@ -7,6 +7,7 @@ import TopBar from "./TopBar";
 import "./Gui.css";
 import { arePointsEqual } from "../util/utils";
 import useRadarData from "../hooks/useRadarData";
+import useGameData from "../hooks/useGameData";
 import { useSettings } from "../hooks/useSettings";
 
 function toggleKey(
@@ -40,6 +41,10 @@ export default function Gui() {
     speedupFactor,
     setSpeedupFactor,
   } = useRadarData(settings.extrapolate);
+
+  // The visible side; the GOD perspective shows both sides and cannot act.
+  const team = settings.perspective === "GOD" ? null : settings.perspective;
+  const gameData = useGameData(team, time);
 
   const blueMonostaticRadars = displayData.blueRadars.filter((sensor) =>
     arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
@@ -99,6 +104,8 @@ export default function Gui() {
             hiddenRedKeys={hiddenRedKeys}
             bluePclSensors={bluePclSensors}
             trajectories={trajectories}
+            team={team}
+            campSites={gameData.campSites}
           />
         </main>
       </div>
