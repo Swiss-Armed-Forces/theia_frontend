@@ -11,6 +11,8 @@ import useRadarData, {
   type Track,
 } from "../hooks/useRadarData";
 import useGameData from "../hooks/useGameData";
+import useEvents from "../hooks/useEvents";
+import EventLog from "./EventLog";
 import { useSettings } from "../hooks/useSettings";
 
 function toggleKey(
@@ -48,6 +50,7 @@ export default function Gui() {
   // The visible side; the GOD perspective shows both sides and cannot act.
   const team = settings.perspective === "GOD" ? null : settings.perspective;
   const gameData = useGameData(team, time);
+  const { entries: eventLogEntries, addLocalEntry } = useEvents(time);
 
   const blueMonostaticRadars = displayData.blueRadars.filter((sensor) =>
     arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
@@ -124,6 +127,11 @@ export default function Gui() {
             campSites={gameData.campSites}
             transportTimes={gameData.transportTimes}
             attackTargets={attackTargets}
+            onActionFailed={(msg) => addLocalEntry(team, msg)}
+          />
+          <EventLog
+            entries={eventLogEntries}
+            perspective={settings.perspective}
           />
         </main>
       </div>

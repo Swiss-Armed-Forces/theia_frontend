@@ -34,6 +34,7 @@ export default function PlayerActionsLayer({
   campSites,
   transportTimes,
   attackTargets,
+  onActionFailed,
   actionMode,
   onActionModeChange,
 }: {
@@ -43,6 +44,8 @@ export default function PlayerActionsLayer({
   transportTimes: TransportTime[];
   /** Enemy tracks the side can attack */
   attackTargets: Track[];
+  /** Called with a message if an action could not be sent */
+  onActionFailed: (msg: string) => void;
   /** Current action mode; only valid while its camp site is alive */
   actionMode: ActionMode | null;
   onActionModeChange: (mode: ActionMode | null) => void;
@@ -101,9 +104,12 @@ export default function PlayerActionsLayer({
   function submit(action: ActionRequest) {
     setTransportTargetId(null);
     onActionModeChange(null);
+    // A rejected action (`false`) is reported by the backend as an event.
     postAction(team, action).catch((error: unknown) => {
-      // TODO(WP5): show failures in the event log.
       console.error(error);
+      onActionFailed(
+        `[ACTION ${team}] could not be sent: ${error instanceof Error ? error.message : String(error)}`,
+      );
     });
   }
 

@@ -32,6 +32,7 @@ export default function RadarMap({
   campSites,
   transportTimes,
   attackTargets,
+  onActionFailed,
   resizeTrigger,
 }: {
   time: Date;
@@ -50,6 +51,8 @@ export default function RadarMap({
   transportTimes: TransportTime[];
   /** Enemy tracks the visible side can attack */
   attackTargets: Track[];
+  /** Called with a message if an action could not be sent */
+  onActionFailed: (msg: string) => void;
   resizeTrigger?: boolean;
 }) {
   const { settings } = useSettings();
@@ -215,6 +218,7 @@ export default function RadarMap({
           campSites={campSites}
           transportTimes={transportTimes}
           attackTargets={attackTargets}
+          onActionFailed={onActionFailed}
           actionMode={activeActionMode}
           onActionModeChange={setActionMode}
         />
