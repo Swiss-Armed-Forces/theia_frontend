@@ -123,3 +123,79 @@
 .leaflet-container.action-mode {
   cursor: crosshair;
 }
+
+.action-button.secondary {
+  background-color: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--panel-border-color);
+}
+
+.transport-time-label {
+  background: var(--panel-bg);
+  color: var(--text-color);
+  border: 1px solid var(--panel-border-color);
+  font-weight: bold;
+  padding: 2px 6px;
+}
+
+.transport-time-label::before {
+  display: none; /* no arrow for a centred label */
+}
+
+.parameter-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000; /* above the map and its controls */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.parameter-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 260px;
+  background: var(--panel-bg);
+  color: var(--text-color);
+  border: 1px solid var(--panel-border-color);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 14px;
+}
+
+.parameter-dialog-title {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.parameter-dialog-description {
+  opacity: 0.8;
+}
+
+.parameter-dialog-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.parameter-dialog-field input {
+  width: 80px;
+  padding: 4px 6px;
+  background: var(--primary-bg);
+  color: var(--text-color);
+  border: 1px solid var(--panel-border-color);
+  border-radius: 4px;
+}
+
+.parameter-dialog-field input[aria-invalid="true"] {
+  border-color: var(--accent);
+}
+
+.parameter-dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

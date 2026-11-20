@@ -58,3 +58,12 @@ export function availableActions(
   }
   return actions;
 }
+
+/** 45 -> "45 s", 720 -> "12 min", 3900 -> "1 h 05 min" */
+export function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${Math.round(seconds)} s`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  return `${h} h ${String(minutes % 60).padStart(2, "0")} min`;
+}

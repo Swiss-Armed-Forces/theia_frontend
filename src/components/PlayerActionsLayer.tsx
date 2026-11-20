@@ -10,6 +10,8 @@ import type { Point, Team, Track } from "../hooks/useRadarData";
 import type { ActionKind } from "../util/campSites";
 import ActionPopup from "./ActionPopup";
 import AttackTargetsLayer from "./AttackTargetsLayer";
+import ParameterDialog from "./ParameterDialog";
+import TransportTargetsLayer from "./TransportTargetsLayer";
 import CampSiteMarker from "./CampSiteMarker";
 
 /** An action the player has started and whose target is being picked. */
@@ -55,6 +57,14 @@ export default function PlayerActionsLayer({
   const popupSeq = useRef(0);
   const popupSite = campSites.find((site) => site.id === popupRequest?.siteId);
   const modeSite = campSites.find((site) => site.id === actionMode?.siteId);
+  // Destination picked in the transport mode; its count is being entered.
+  const [transportTargetId, setTransportTargetId] = useState<number | null>(
+    null,
+  );
+  const transportTarget =
+    actionMode?.kind === "transport"
+      ? campSites.find((site) => site.id === transportTargetId)
+      : undefined;
 
   // Cancel the action mode with Esc or a right-click on the map.
   useEffect(() => {
@@ -83,11 +93,13 @@ export default function PlayerActionsLayer({
 
   function startAction(site: CampSiteState, kind: ActionKind) {
     setPopupRequest(null);
+    setTransportTargetId(null);
     onActionModeChange({ kind, siteId: site.id });
   }
 
   // Leave the action mode right away: the outcome arrives as an event.
   function submit(action: ActionRequest) {
+    setTransportTargetId(null);
     onActionModeChange(null);
     postAction(team, action).catch((error: unknown) => {
       // TODO(WP5): show failures in the event log.
@@ -98,6 +110,16 @@ export default function PlayerActionsLayer({
   function launchAt(destination: Point) {
     if (!actionMode) return;
     submit({ type: "launch", site_id: actionMode.siteId, destination });
+  }
+
+  function moveStock(target: CampSiteState, count: number) {
+    if (!actionMode) return;
+    submit({
+      type: "move_stock",
+      source_site_id: actionMode.siteId,
+      target_site_id: target.id,
+      count,
+    });
   }
 
   return (
@@ -127,6 +149,36 @@ export default function PlayerActionsLayer({
           team={team}
           targets={attackTargets}
           onPick={launchAt}
+        />
+      )}
+      {actionMode?.kind === "transport" && modeSite && (
+        <TransportTargetsLayer
+          map={map}
+          team={team}
+          source={modeSite}
+          campSites={campSites}
+          transportTimes={transportTimes}
+          onPick={(destination) => setTransportTargetId(destination.id)}
+        />
+      )}
+      {modeSite && transportTarget && (
+        <ParameterDialog
+          key={transportTarget.id}
+          title="Transport"
+          description={`From ${modeSite.name} to ${transportTarget.name}`}
+          fields={[
+            {
+              key: "count",
+              label: "Rounds",
+              min: 1,
+              max: modeSite.n_ammo,
+              default: modeSite.n_ammo,
+            },
+          ]}
+          submitLabel="Transport"
+          onSubmit={({ count }) => moveStock(transportTarget, count)}
+          // Back to the transport mode: another destination can be picked.
+          onCancel={() => setTransportTargetId(null)}
         />
       )}
       {actionMode && modeSite && (

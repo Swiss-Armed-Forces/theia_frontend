@@ -2,26 +2,12 @@ import L from "leaflet";
 import { useEffect, useRef } from "react";
 import type { Point, Team, Track } from "../hooks/useRadarData";
 import { BLUE_GEOJSON_COLOR, RED_GEOJSON_COLOR } from "../contexts/constants";
+import { actionTargetPane } from "../util/actionTargetPane";
 import { formatCategory } from "../util/utils";
-
-/**
- * Pane of the target highlights: above the markers (600), so the target
- * symbols don't cover the circles and catch their clicks, and below the
- * tooltips (650).
- */
-const TARGET_PANE = "actionTargetPane";
-const TARGET_PANE_Z_INDEX = "640";
 
 const RADIUS = 18; // px, independent of the zoom level
 const STYLE = { weight: 2, opacity: 0.9, fillOpacity: 0.3 };
 const HOVER_STYLE = { weight: 3, opacity: 1, fillOpacity: 0.55 };
-
-function targetPane(map: L.Map): string {
-  if (!map.getPane(TARGET_PANE)) {
-    map.createPane(TARGET_PANE).style.zIndex = TARGET_PANE_Z_INDEX;
-  }
-  return TARGET_PANE;
-}
 
 function AttackTargetCircle({
   map,
@@ -53,7 +39,7 @@ function AttackTargetCircle({
       radius: RADIUS,
       color,
       fillColor: color,
-      pane: targetPane(map),
+      pane: actionTargetPane(map),
       // Don't let the click reach the map (coordinate popup etc.).
       bubblingMouseEvents: false,
     });
