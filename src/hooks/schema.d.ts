@@ -631,11 +631,14 @@ export interface components {
         };
         /** EventMessage */
         EventMessage: {
+            /** Id */
+            id: number;
             /**
              * Time
              * Format: date-time
              */
             time: string;
+            party: components["schemas"]["Party"] | null;
             /** Msg */
             msg: string;
         };
