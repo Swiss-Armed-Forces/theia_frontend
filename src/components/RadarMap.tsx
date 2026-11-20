@@ -6,12 +6,12 @@ import type {
   Team,
   Track,
 } from "../hooks/useRadarData";
-import type { CampSiteState } from "../hooks/useGameData";
+import type { CampSiteState, TransportTime } from "../hooks/useGameData";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState } from "react";
 import { MonostaticRadarMarker, PclSensorMarkers } from "./RadarMarker";
 import TrajectoryLayer from "./TrajectoryLayer";
-import CampSiteMarker from "./CampSiteMarker";
+import PlayerActionsLayer, { type ActionMode } from "./PlayerActionsLayer";
 import ClickPopup from "./ClickPopup";
 import GeoJsonLayer from "./GeoJsonLayer";
 import { extractState } from "../util/utils";
@@ -30,6 +30,7 @@ export default function RadarMap({
   trajectories: allTrajectories,
   team,
   campSites,
+  transportTimes,
   resizeTrigger,
 }: {
   time: Date;
@@ -44,6 +45,8 @@ export default function RadarMap({
   team: Team | null;
   /** Own camp sites; only present if the visible side is user-controlled */
   campSites: CampSiteState[];
+  /** Own transport routes; only present if the side is user-controlled */
+  transportTimes: TransportTime[];
   resizeTrigger?: boolean;
 }) {
   const { settings } = useSettings();
@@ -86,6 +89,20 @@ export default function RadarMap({
     };
   }, [map, settings.tileServerConfig.url, settings.tileServerConfig.attribution]);
 
+  // Action the player has started and whose target is being picked. Reset
+  // when the perspective changes; only valid while its camp site is alive.
+  const [actionMode, setActionMode] = useState<ActionMode | null>(null);
+  const [actionModeTeam, setActionModeTeam] = useState(team);
+  if (team !== actionModeTeam) {
+    setActionModeTeam(team);
+    setActionMode(null);
+  }
+  const activeActionMode =
+    actionMode !== null &&
+    campSites.some((site) => site.id === actionMode.siteId && site.is_alive)
+      ? actionMode
+      : null;
+
   // Camp sites are drawn by their own markers: drop their ground truth.
   const campSiteTargetIds = new Set(campSites.map((site) => site.target_id));
   const trajectories = allTrajectories.filter(
@@ -114,12 +131,6 @@ export default function RadarMap({
       }}
     />
   ));
-  const campSiteMarkers =
-    team === null
-      ? []
-      : campSites.map((site) => (
-          <CampSiteMarker key={site.id} map={map} site={site} team={team} />
-        ));
   const pclSensorMarkers = bluePclSensors.map((sensor, i) => (
     <PclSensorMarkers key={i} map={map} sensor={sensor} />
   ));
@@ -193,8 +204,18 @@ export default function RadarMap({
       {monostaticRadarMarkers}
       {pclSensorMarkers}
       {groundTruthLayers}
-      {campSiteMarkers}
-      <ClickPopup map={map} />
+      {team !== null && (
+        <PlayerActionsLayer
+          key={team}
+          map={map}
+          team={team}
+          campSites={campSites}
+          transportTimes={transportTimes}
+          actionMode={activeActionMode}
+          onActionModeChange={setActionMode}
+        />
+      )}
+      <ClickPopup map={map} enabled={activeActionMode === null} />
       <div
         style={{
           position: "absolute",

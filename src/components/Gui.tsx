@@ -106,6 +106,7 @@ export default function Gui() {
             trajectories={trajectories}
             team={team}
             campSites={gameData.campSites}
+            transportTimes={gameData.transportTimes}
           />
         </main>
       </div>

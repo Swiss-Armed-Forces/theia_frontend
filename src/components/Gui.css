@@ -63,3 +63,63 @@
   cursor: pointer;
   flex-shrink: 0;
 }
+/* Player actions */
+.action-popup .leaflet-popup-content {
+  margin: 10px 12px;
+}
+
+.action-popup-title {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.action-popup-details {
+  margin-top: 4px;
+  color: #4b5563;
+}
+
+.action-popup-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.action-button {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.action-button:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.action-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.action-banner {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000; /* above the map */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--panel-bg);
+  color: var(--text-color);
+  border: 1px solid var(--panel-border-color);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.leaflet-container.action-mode {
+  cursor: crosshair;
+}

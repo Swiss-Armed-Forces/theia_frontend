@@ -1,9 +1,21 @@
 import L from "leaflet";
 import { useEffect } from "react";
 
-export default function ClickPopup({ map }: { map: L.Map | null }) {
+/**
+ * Popup with the coordinates of a click on the map.
+ *
+ * @param enabled whether map clicks open the popup; off while the player picks
+ *   an action's target
+ */
+export default function ClickPopup({
+  map,
+  enabled,
+}: {
+  map: L.Map | null;
+  enabled: boolean;
+}) {
   useEffect(() => {
-    if (!map) return;
+    if (!map || !enabled) return;
     const mapInstance = map;
 
     const popup = L.popup();
@@ -24,7 +36,7 @@ export default function ClickPopup({ map }: { map: L.Map | null }) {
       mapInstance.off("click", handleClick);
       popup.remove();
     };
-  }, [map]);
+  }, [map, enabled]);
 
   return null;
 }
