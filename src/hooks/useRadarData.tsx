@@ -149,15 +149,6 @@ export default function useRadarData(extrapolate: boolean) {
   };
 }
 
-// Radars, PCL receivers and transmitters are drawn as radar markers already.
-function isSensorSite(info: TargetInfo): boolean {
-  return (
-    info.category === "SENSOR" ||
-    info.tags.includes("pcl_receiver") ||
-    info.tags.includes("transmitter")
-  );
-}
-
 function buildDisplayData(
   perspective: Perspective,
   blueSituationalPicture: SituationalPicture,
@@ -171,7 +162,7 @@ function buildDisplayData(
   if (perspective === "RED") {
     blueTrajectories = redSituationalPicture.enemy_tracks;
   } else if (["BLUE", "GOD"].includes(perspective)) {
-    blueTrajectories = blueGroundTruth.filter((gt) => !isSensorSite(gt.info));
+    blueTrajectories = blueGroundTruth;
   } else {
     throw new Error("This part should never be reached!");
   }

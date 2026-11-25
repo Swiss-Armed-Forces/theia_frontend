@@ -2,14 +2,12 @@ import L from "leaflet";
 import type {
   GeoJSONAnnotation,
   GroundTruth,
-  Sensor,
   Team,
   Track,
 } from "../hooks/useRadarData";
 import type { CampSiteState, TransportTime } from "../hooks/useGameData";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState } from "react";
-import { MonostaticRadarMarker, PclSensorMarkers } from "./RadarMarker";
 import TrajectoryLayer from "./TrajectoryLayer";
 import PlayerActionsLayer, { type ActionMode } from "./PlayerActionsLayer";
 import ClickPopup from "./ClickPopup";
@@ -21,8 +19,6 @@ import { BLUE_GEOJSON_COLOR, RED_GEOJSON_COLOR } from "../contexts/constants";
 
 export default function RadarMap({
   time,
-  blueMonostaticRadars,
-  bluePclSensors,
   blueGeoJson,
   redGeoJson,
   shownBlueIds,
@@ -37,8 +33,6 @@ export default function RadarMap({
   resizeTrigger,
 }: {
   time: Date;
-  blueMonostaticRadars: Sensor[];
-  bluePclSensors: Sensor[];
   blueGeoJson: GeoJSONAnnotation[];
   redGeoJson: GeoJSONAnnotation[];
   shownBlueIds: Set<string>;
@@ -130,19 +124,6 @@ export default function RadarMap({
     return visibleAltRange[0] <= alt && alt <= visibleAltRange[1];
   });
 
-  const monostaticRadarMarkers = blueMonostaticRadars.map((radar, i) => (
-    <MonostaticRadarMarker
-      key={i}
-      map={map}
-      radar={radar}
-      onClick={function (): void {
-        throw new Error("Function not implemented.");
-      }}
-    />
-  ));
-  const pclSensorMarkers = bluePclSensors.map((sensor, i) => (
-    <PclSensorMarkers key={i} map={map} sensor={sensor} />
-  ));
   // Only ground truth (i. e. friendly units) is tied to annotations.
   const annotatedTargetIds = new Set(
     [...blueGeoJson, ...redGeoJson].flatMap(
@@ -226,8 +207,6 @@ export default function RadarMap({
       />
       {blueGeoJsonLayers}
       {redGeoJsonLayers}
-      {monostaticRadarMarkers}
-      {pclSensorMarkers}
       {groundTruthLayers}
       {team !== null && (
         <PlayerActionsLayer

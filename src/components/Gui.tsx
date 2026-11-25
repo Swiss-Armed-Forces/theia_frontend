@@ -6,7 +6,6 @@ import SettingsForm from "./SettingsForm";
 import { type Chip } from "./ChipList";
 import TopBar from "./TopBar";
 import "./Gui.css";
-import { arePointsEqual } from "../util/utils";
 import useRadarData, {
   type GeoJSONAnnotation,
   type GroundTruth,
@@ -70,15 +69,6 @@ export default function Gui() {
   const team = settings.perspective === "GOD" ? null : settings.perspective;
   const gameData = useGameData(team, time);
   const { entries: eventLogEntries, addLocalEntry } = useEvents(time);
-
-  const blueMonostaticRadars = displayData.blueRadars.filter((sensor) =>
-    arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
-  );
-
-  const bluePclSensors = displayData.blueRadars.filter(
-    (sensor) =>
-      !arePointsEqual(sensor.receiver.point, sensor.transmitter.point),
-  );
 
   const trajectories = displayData.redTargets.concat(displayData.blueTargets);
 
@@ -151,12 +141,10 @@ export default function Gui() {
           <RadarMap
             resizeTrigger={isSidebarCollapsed}
             time={time}
-            blueMonostaticRadars={blueMonostaticRadars}
             blueGeoJson={displayData.blueGeoJson}
             redGeoJson={displayData.redGeoJson}
             shownBlueIds={shownBlueIds}
             shownRedIds={shownRedIds}
-            bluePclSensors={bluePclSensors}
             trajectories={trajectories}
             team={team}
             campSites={gameData.campSites}
