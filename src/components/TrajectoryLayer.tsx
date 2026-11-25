@@ -7,37 +7,58 @@ import { milsymbolIcon } from "../util/milsymbolIcon";
 import { formatCategory } from "../util/utils";
 
 const TOOLTIP_OPTS: L.TooltipOptions = { direction: "top", offset: [0, -10] };
+/** Same look as a destroyed camp site */
+const DEACTIVATED_STYLE = "filter: grayscale(1); opacity: 0.5;";
+
+function createIcon(sidc: string, isDeactivated: boolean): L.DivIcon {
+  return milsymbolIcon(
+    new ms.Symbol(sidc, { size: 24 }),
+    isDeactivated ? DEACTIVATED_STYLE : undefined,
+  );
+}
 
 function TargetMarker({
   map,
   tooltip,
   position,
   sidc,
+  isDeactivated,
   onClick,
+  onContextMenu,
 }: {
   map: L.Map | null;
   tooltip: ReactElement;
   position: Point;
   sidc: string;
+  isDeactivated: boolean;
   onClick?: () => void;
+  onContextMenu?: () => void;
 }) {
   const markerRef = useRef<L.Marker | null>(null);
-  const sidcRef = useRef<string | null>(null);
-  // The marker is created once; it calls the latest handler via this ref.
+  const iconKeyRef = useRef<string | null>(null);
+  // The marker is created once; it calls the latest handlers via these refs.
   const onClickRef = useRef(onClick);
+  const onContextMenuRef = useRef(onContextMenu);
+  const iconKey = `${sidc}|${isDeactivated}`;
 
   // Effect A: create the marker once per map instance.
   useEffect(() => {
     if (!map) return;
-    const icon = milsymbolIcon(new ms.Symbol(sidc, { size: 24 }));
+    const icon = createIcon(sidc, isDeactivated);
     const marker = L.marker([position.lat, position.lon], { icon });
     // Bind the tooltip once; Effect B only updates its content in place.
     // Re-binding on every poll tick would close an open (hovered) tooltip.
     marker.bindTooltip("", TOOLTIP_OPTS);
     marker.on("click", () => onClickRef.current?.());
+    marker.on("contextmenu", (event: L.LeafletMouseEvent) => {
+      const handler = onContextMenuRef.current;
+      if (!handler) return;
+      L.DomEvent.preventDefault(event.originalEvent); // no browser menu
+      handler();
+    });
     marker.addTo(map);
     markerRef.current = marker;
-    sidcRef.current = sidc;
+    iconKeyRef.current = iconKey;
     return () => {
       marker.remove();
       markerRef.current = null;
@@ -49,13 +70,14 @@ function TargetMarker({
   // without removing/re-adding it, to avoid flicker on each poll tick.
   useEffect(() => {
     onClickRef.current = onClick;
+    onContextMenuRef.current = onContextMenu;
     const marker = markerRef.current;
     if (!marker) return;
     marker.setLatLng([position.lat, position.lon]);
     // setIcon() replaces the icon's DOM element, so only do it on change.
-    if (sidcRef.current !== sidc) {
-      marker.setIcon(milsymbolIcon(new ms.Symbol(sidc, { size: 24 })));
-      sidcRef.current = sidc;
+    if (iconKeyRef.current !== iconKey) {
+      marker.setIcon(createIcon(sidc, isDeactivated));
+      iconKeyRef.current = iconKey;
     }
     marker.setTooltipContent(renderToStaticMarkup(tooltip));
   });
@@ -66,12 +88,18 @@ function TargetMarker({
 export default function TrajectoryLayer({
   map,
   trajectory,
+  isDeactivated = false,
   onClick,
+  onContextMenu,
 }: {
   map: L.Map | null;
   trajectory: GroundTruth | Track;
+  /** Whether the target is switched off (e.g. a radar); drawn grayed out */
+  isDeactivated?: boolean;
   /** Called when the target's icon is clicked */
   onClick?: () => void;
+  /** Called when the target's icon is right-clicked */
+  onContextMenu?: () => void;
 }) {
   const currentPoint = trajectory.points[0];
   const id = "target_id" in trajectory ? trajectory.target_id : trajectory.id;
@@ -118,6 +146,14 @@ export default function TrajectoryLayer({
           <span>{formatCategory(trajectory.info.category)}</span>
         </>
       )}
+      {isDeactivated && (
+        <>
+          <span style={{ textAlign: "right", fontWeight: "bold" }}>
+            Status:
+          </span>
+          <span>Switched off</span>
+        </>
+      )}
       <span style={{ textAlign: "right", fontWeight: "bold" }}>
         Latitude:
       </span>
@@ -138,7 +174,9 @@ export default function TrajectoryLayer({
       position={currentPoint}
       sidc={trajectory.sidc}
       tooltip={tooltip}
+      isDeactivated={isDeactivated}
       onClick={onClick}
+      onContextMenu={onContextMenu}
     />
   );
 }

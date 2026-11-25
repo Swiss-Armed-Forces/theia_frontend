@@ -6,18 +6,24 @@ export type CampSiteState = components["schemas"]["CampSiteState"];
 export type TransportTime = components["schemas"]["TransportTime"];
 export type LaunchAction = components["schemas"]["LaunchAction"];
 export type MoveStockAction = components["schemas"]["MoveStockAction"];
+export type ToggleMonostaticRadarAction =
+  components["schemas"]["ToggleMonostaticRadarAction"];
+export type RadarState = components["schemas"]["RadarState"];
 
 // The backend fills in `id`, `time` and `party` of an action itself.
 type ServerFilled = "id" | "time" | "party";
 export type ActionRequest =
   | Omit<LaunchAction, ServerFilled>
-  | Omit<MoveStockAction, ServerFilled>;
+  | Omit<MoveStockAction, ServerFilled>
+  | Omit<ToggleMonostaticRadarAction, ServerFilled>;
 
 export type GameData = {
   /** Whether the visible side is controlled by the user (never in GOD view). */
   isUserControlled: boolean;
   campSites: CampSiteState[];
   transportTimes: TransportTime[];
+  /** Radars the user can switch on and off */
+  radars: RadarState[];
 };
 
 const BASE_URL = "http://localhost:8000";
@@ -26,14 +32,16 @@ const NO_GAME_DATA: GameData = {
   isUserControlled: false,
   campSites: [],
   transportTimes: [],
+  radars: [],
 };
 
 /**
  * Game state of the visible side: whether the user controls it, its camp
- * sites and its transport routes.
+ * sites, its transport routes and its switchable radars.
  *
  * @param team visible side, or `null` in the GOD perspective (no actions)
- * @param time current simulation time; the camp sites are refreshed on change
+ * @param time current simulation time; camp sites and radars are refreshed on
+ *   change
  */
 export default function useGameData(team: Team | null, time: Date): GameData {
   const [controlled, setControlled] = useState<{
@@ -48,6 +56,10 @@ export default function useGameData(team: Team | null, time: Date): GameData {
     team: Team | null;
     routes: TransportTime[];
   }>({ team: null, routes: [] });
+  const [radars, setRadars] = useState<{
+    team: Team | null;
+    radars: RadarState[];
+  }>({ team: null, radars: [] });
 
   const isUserControlled =
     team !== null &&
@@ -98,6 +110,20 @@ export default function useGameData(team: Team | null, time: Date): GameData {
     };
   }, [team, isUserControlled, time]);
 
+  // Radars are switched on and off: on every time tick.
+  useEffect(() => {
+    if (team === null || !isUserControlled) return;
+    let cancelled = false;
+    fetchRadars(team)
+      .then((states) => {
+        if (!cancelled) setRadars({ team, radars: states });
+      })
+      .catch((error) => console.error(error));
+    return () => {
+      cancelled = true;
+    };
+  }, [team, isUserControlled, time]);
+
   if (!isUserControlled) {
     return NO_GAME_DATA;
   }
@@ -106,6 +132,7 @@ export default function useGameData(team: Team | null, time: Date): GameData {
     isUserControlled,
     campSites: campSites.team === team ? campSites.sites : [],
     transportTimes: transportTimes.team === team ? transportTimes.routes : [],
+    radars: radars.team === team ? radars.radars : [],
   };
 }
 
@@ -154,6 +181,14 @@ async function fetchTransportTimes(team: Team): Promise<TransportTime[]> {
   const response = await fetch(`${BASE_URL}/transport_times/${team}`);
   if (!response.ok) {
     throw new Error(`GET /transport_times/${team} failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+async function fetchRadars(team: Team): Promise<RadarState[]> {
+  const response = await fetch(`${BASE_URL}/radars/${team}`);
+  if (!response.ok) {
+    throw new Error(`GET /radars/${team} failed: ${response.status}`);
   }
   return response.json();
 }

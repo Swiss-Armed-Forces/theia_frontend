@@ -149,6 +149,7 @@ export default function Gui() {
             team={team}
             campSites={gameData.campSites}
             transportTimes={gameData.transportTimes}
+            radars={gameData.radars}
             attackTargets={attackTargets}
             onActionFailed={(msg) => addLocalEntry(team, msg)}
             onTargetClick={toggleTargetAnnotations}

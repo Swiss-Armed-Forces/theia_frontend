@@ -5,7 +5,12 @@ import type {
   Team,
   Track,
 } from "../hooks/useRadarData";
-import type { CampSiteState, TransportTime } from "../hooks/useGameData";
+import {
+  postAction,
+  type CampSiteState,
+  type RadarState,
+  type TransportTime,
+} from "../hooks/useGameData";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState } from "react";
 import TrajectoryLayer from "./TrajectoryLayer";
@@ -27,6 +32,7 @@ export default function RadarMap({
   team,
   campSites,
   transportTimes,
+  radars,
   attackTargets,
   onActionFailed,
   onTargetClick,
@@ -44,6 +50,8 @@ export default function RadarMap({
   campSites: CampSiteState[];
   /** Own transport routes; only present if the side is user-controlled */
   transportTimes: TransportTime[];
+  /** Own switchable radars; only present if the side is user-controlled */
+  radars: RadarState[];
   /** Enemy tracks the visible side can attack */
   attackTargets: Track[];
   /** Called with a message if an action could not be sent */
@@ -130,23 +138,56 @@ export default function RadarMap({
       (annotation) => annotation.target_ids,
     ),
   );
-  const groundTruthLayers = visibleTrajectories.map((trajectory) => (
-    <TrajectoryLayer
-      key={
-        "id" in trajectory
-          ? `TRACK ${trajectory.id}`
-          : `TRUTH ${trajectory.target_id}`
-      }
-      map={map}
-      trajectory={trajectory}
-      onClick={
-        "target_id" in trajectory &&
-        annotatedTargetIds.has(trajectory.target_id)
-          ? () => onTargetClick(trajectory.target_id)
-          : undefined
-      }
-    />
-  ));
+
+  // A right-click on an own radar switches it on or off.
+  const radarsByTargetId = new Map(
+    radars.map((radar) => [radar.target_id, radar]),
+  );
+  const toggleRadar = (radar: RadarState) => {
+    if (team === null) return;
+    // A rejected action (`false`) is reported by the backend as an event.
+    postAction(team, {
+      type: "toggle_monostatic_radar",
+      sensor_id: radar.sensor_id,
+      new_is_on: !radar.is_on,
+    }).catch((error: unknown) => {
+      console.error(error);
+      onActionFailed(
+        `[ACTION ${team}] could not be sent: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    });
+  };
+
+  const groundTruthLayers = visibleTrajectories.map((trajectory) => {
+    const radar =
+      "target_id" in trajectory
+        ? radarsByTargetId.get(trajectory.target_id)
+        : undefined;
+    return (
+      <TrajectoryLayer
+        key={
+          "id" in trajectory
+            ? `TRACK ${trajectory.id}`
+            : `TRUTH ${trajectory.target_id}`
+        }
+        map={map}
+        trajectory={trajectory}
+        isDeactivated={radar !== undefined && !radar.is_on}
+        onClick={
+          "target_id" in trajectory &&
+          annotatedTargetIds.has(trajectory.target_id)
+            ? () => onTargetClick(trajectory.target_id)
+            : undefined
+        }
+        onContextMenu={
+          // Not while picking an action's target: there, a right-click cancels.
+          radar !== undefined && activeActionMode === null
+            ? () => toggleRadar(radar)
+            : undefined
+        }
+      />
+    );
+  });
 
   const blueGeoJsonStyle = { color: BLUE_GEOJSON_COLOR, fillOpacity: 0.3 };
   const redGeoJsonStyle = { color: RED_GEOJSON_COLOR, fillOpacity: 0.3 };
