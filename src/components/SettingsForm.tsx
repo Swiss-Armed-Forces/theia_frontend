@@ -8,7 +8,7 @@ import {
 import { type Perspective } from "../contexts/SettingsContext";
 import { useSettings } from "../hooks/useSettings";
 import ButtonGroup from "./ButtonGroup";
-import ChipList from "./ChipList";
+import ChipList, { type Chip } from "./ChipList";
 import Switch from "./Switch";
 
 function isPerspective(value: unknown): value is Perspective {
@@ -18,15 +18,15 @@ function isPerspective(value: unknown): value is Perspective {
 }
 
 export default function SettingsForm({
-  blueGeoJsonKeys,
-  redGeoJsonKeys,
+  blueGeoJsonChips,
+  redGeoJsonChips,
   hiddenBlueKeys,
   hiddenRedKeys,
   onToggleBlue,
   onToggleRed,
 }: {
-  blueGeoJsonKeys: string[];
-  redGeoJsonKeys: string[];
+  blueGeoJsonChips: Chip[];
+  redGeoJsonChips: Chip[];
   hiddenBlueKeys: Set<string>;
   hiddenRedKeys: Set<string>;
   onToggleBlue: (key: string) => void;
@@ -99,7 +99,7 @@ export default function SettingsForm({
         >
           <legend>Blue Overlays</legend>
           <ChipList
-            keys={blueGeoJsonKeys}
+            chips={blueGeoJsonChips}
             hiddenKeys={hiddenBlueKeys}
             onToggle={onToggleBlue}
             color={BLUE_GEOJSON_COLOR}
@@ -112,7 +112,7 @@ export default function SettingsForm({
         >
           <legend>Red Overlays</legend>
           <ChipList
-            keys={redGeoJsonKeys}
+            chips={redGeoJsonChips}
             hiddenKeys={hiddenRedKeys}
             onToggle={onToggleRed}
             color={RED_GEOJSON_COLOR}

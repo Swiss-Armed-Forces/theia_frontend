@@ -3,10 +3,12 @@ import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import RadarMap from "./RadarMap";
 import SettingsForm from "./SettingsForm";
+import { type Chip } from "./ChipList";
 import TopBar from "./TopBar";
 import "./Gui.css";
 import { arePointsEqual } from "../util/utils";
 import useRadarData, {
+  type GeoJSONAnnotation,
   type GroundTruth,
   type Track,
 } from "../hooks/useRadarData";
@@ -28,6 +30,11 @@ function toggleKey(
     }
     return next;
   });
+}
+
+// The side panel toggles annotations by ID and labels them like the map.
+function toChip(annotation: GeoJSONAnnotation): Chip {
+  return { key: annotation.id, label: annotation.hover_text ?? annotation.id };
 }
 
 export default function Gui() {
@@ -78,8 +85,8 @@ export default function Gui() {
 
   const sidebarContent = (
     <SettingsForm
-      blueGeoJsonKeys={Object.keys(displayData.blueGeoJson)}
-      redGeoJsonKeys={Object.keys(displayData.redGeoJson)}
+      blueGeoJsonChips={displayData.blueGeoJson.map(toChip)}
+      redGeoJsonChips={displayData.redGeoJson.map(toChip)}
       hiddenBlueKeys={hiddenBlueKeys}
       hiddenRedKeys={hiddenRedKeys}
       onToggleBlue={(key) => toggleKey(setHiddenBlueKeys, key)}

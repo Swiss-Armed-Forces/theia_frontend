@@ -1,6 +1,6 @@
 import L from "leaflet";
 import type {
-  GeoJSONFeature,
+  GeoJSONAnnotation,
   GroundTruth,
   Sensor,
   Team,
@@ -38,8 +38,8 @@ export default function RadarMap({
   time: Date;
   blueMonostaticRadars: Sensor[];
   bluePclSensors: Sensor[];
-  blueGeoJson: Record<string, GeoJSONFeature>;
-  redGeoJson: Record<string, GeoJSONFeature>;
+  blueGeoJson: GeoJSONAnnotation[];
+  redGeoJson: GeoJSONAnnotation[];
   hiddenBlueKeys: Set<string>;
   hiddenRedKeys: Set<string>;
   trajectories: (GroundTruth | Track)[];
@@ -155,28 +155,32 @@ export default function RadarMap({
   const blueGeoJsonStyle = { color: BLUE_GEOJSON_COLOR, fillOpacity: 0.3 };
   const redGeoJsonStyle = { color: RED_GEOJSON_COLOR, fillOpacity: 0.3 };
 
-  const blueGeoJsonLayers = Object.entries(blueGeoJson)
-    .filter(([key]) => !hiddenBlueKeys.has(key))
-    .map(([key, feature]) => (
-      <GeoJsonLayer
-        key={key}
-        map={map}
-        data={feature}
-        style={blueGeoJsonStyle}
-        tooltipLabel={key}
-      />
-    ));
-  const redGeoJsonLayers = Object.entries(redGeoJson)
-    .filter(([key]) => !hiddenRedKeys.has(key))
-    .map(([key, feature]) => (
-      <GeoJsonLayer
-        key={key}
-        map={map}
-        data={feature}
-        style={redGeoJsonStyle}
-        tooltipLabel={key}
-      />
-    ));
+  const geoJsonLayers = (
+    annotations: GeoJSONAnnotation[],
+    hiddenIds: Set<string>,
+    style: L.PathOptions,
+  ) =>
+    annotations
+      .filter((annotation) => !hiddenIds.has(annotation.id))
+      .map((annotation) => (
+        <GeoJsonLayer
+          key={annotation.id}
+          map={map}
+          data={annotation.feature}
+          style={style}
+          tooltipLabel={annotation.hover_text ?? annotation.id}
+        />
+      ));
+  const blueGeoJsonLayers = geoJsonLayers(
+    blueGeoJson,
+    hiddenBlueKeys,
+    blueGeoJsonStyle,
+  );
+  const redGeoJsonLayers = geoJsonLayers(
+    redGeoJson,
+    hiddenRedKeys,
+    redGeoJsonStyle,
+  );
 
   return (
     <div

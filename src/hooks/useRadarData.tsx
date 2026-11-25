@@ -19,6 +19,7 @@ export type Track = components["schemas"]["ExtrapolatedTrack"];
 export type GroundTruth = components["schemas"]["ExtrapolatedGroundtruth"];
 export type Team = components["schemas"]["Team"];
 export type TargetInfo = components["schemas"]["TargetInfo"];
+export type GeoJSONAnnotation = components["schemas"]["GeoJSONAnnotation"];
 export type Sensor = MonostaticSensor | PclSensor;
 // Any sensor the backend may report as a friendly radar.
 type ReportedSensor = SituationalPicture["friendly_radars"][number];
@@ -40,10 +41,10 @@ function isDrawableSensor(sensor: ReportedSensor): sensor is Sensor {
 export type DisplayData = {
   blueRadars: (MonostaticSensor | PclSensor)[];
   blueTargets: Track[] | GroundTruth[];
-  blueGeoJson: Record<string, GeoJSONFeature>;
+  blueGeoJson: GeoJSONAnnotation[];
   redRadars: Sensor[];
   redTargets: Track[] | GroundTruth[];
-  redGeoJson: Record<string, GeoJSONFeature>;
+  redGeoJson: GeoJSONAnnotation[];
 };
 
 // const fetchClient = createFetchClient<paths>({
@@ -83,12 +84,8 @@ export default function useRadarData(extrapolate: boolean) {
   const [redSituationalPicture, setRedSituationalPicture] = useState(
     DEFAULT_SITUATIONAL_PICTURE,
   );
-  const [blueGeoJson, setBlueGeoJson] = useState(
-    {} as Record<string, GeoJSONFeature>,
-  );
-  const [redGeoJson, setRedGeoJson] = useState(
-    {} as Record<string, GeoJSONFeature>,
-  );
+  const [blueGeoJson, setBlueGeoJson] = useState([] as GeoJSONAnnotation[]);
+  const [redGeoJson, setRedGeoJson] = useState([] as GeoJSONAnnotation[]);
 
   const secondsInPast = 1;
   const secondsInFuture = extrapolate ? 60 : 0;
@@ -96,11 +93,6 @@ export default function useRadarData(extrapolate: boolean) {
   const refreshPeriodSeconds = 1;
 
   // const time = new Date("2022-06-27T23:01:40");
-
-  useEffect(() => {
-    fetchGeoJson("BLUE").then(setBlueGeoJson);
-    fetchGeoJson("RED").then(setRedGeoJson);
-  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -131,6 +123,9 @@ export default function useRadarData(extrapolate: boolean) {
       setBlueGroundTruth(groundTruths),
     );
     fetchSpeedupFactor().then((factor) => setSpeedupFactor(factor));
+    // The annotations change during the simulation, e.g. when a unit dies.
+    fetchGeoJson("BLUE").then(setBlueGeoJson);
+    fetchGeoJson("RED").then(setRedGeoJson);
   }, [time, secondsInFuture]);
 
   // Summarize the data to be displayed.
@@ -167,10 +162,10 @@ function buildDisplayData(
   perspective: Perspective,
   blueSituationalPicture: SituationalPicture,
   blueGroundTruth: GroundTruth[],
-  blueGeoJson: Record<string, GeoJSONFeature>,
+  blueGeoJson: GeoJSONAnnotation[],
   redSituationalPicture: SituationalPicture,
   redGroundTruth: GroundTruth[],
-  redGeoJson: Record<string, GeoJSONFeature>,
+  redGeoJson: GeoJSONAnnotation[],
 ): DisplayData {
   let blueTrajectories = [];
   if (perspective === "RED") {
@@ -186,7 +181,7 @@ function buildDisplayData(
 
   const displayBlueGeoJson = ["BLUE", "GOD"].includes(perspective)
     ? blueGeoJson
-    : {};
+    : [];
 
   let redTrajectories = [] as Track[] | GroundTruth[];
   if (perspective === "BLUE") {
@@ -202,7 +197,7 @@ function buildDisplayData(
 
   const displayRedGeoJson = ["RED", "GOD"].includes(perspective)
     ? redGeoJson
-    : {};
+    : [];
 
   return {
     blueRadars: blueRadars,
@@ -325,9 +320,7 @@ async function fetchGroundTruth(
   return data;
 }
 
-async function fetchGeoJson(
-  which: Team,
-): Promise<Record<string, GeoJSONFeature>> {
+async function fetchGeoJson(which: Team): Promise<GeoJSONAnnotation[]> {
   const response = await fetch(`${BASE_URL}/geojson/${which}`);
   if (!response.ok) {
     const error = await response.json();

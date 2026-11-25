@@ -1,17 +1,19 @@
+export type Chip = { key: string; label: string };
+
 export default function ChipList({
-  keys,
+  chips,
   hiddenKeys,
   onToggle,
   color,
 }: {
-  keys: string[];
+  chips: Chip[];
   hiddenKeys: Set<string>;
   onToggle: (key: string) => void;
   color: string;
 }) {
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-      {keys.map((key) => {
+      {chips.map(({ key, label }) => {
         const active = !hiddenKeys.has(key);
         return (
           <button
@@ -31,7 +33,7 @@ export default function ChipList({
               transition: "background 0.12s, opacity 0.12s",
             }}
           >
-            {key}
+            {label}
           </button>
         );
       })}
