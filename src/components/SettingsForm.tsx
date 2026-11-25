@@ -34,7 +34,15 @@ export default function SettingsForm({
 }) {
   const { settings, updateSetting } = useSettings();
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        flex: 1,
+        minHeight: 0,
+      }}
+    >
       <div
         style={{
           display: "flex",
@@ -93,32 +101,44 @@ export default function SettingsForm({
           }}
         />
       </fieldset>
-      {["BLUE", "GOD"].includes(settings.perspective) && (
-        <fieldset
-          style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-        >
-          <legend>Blue Overlays</legend>
-          <ChipList
-            chips={blueGeoJsonChips}
-            shownKeys={shownBlueIds}
-            onToggle={onToggleBlue}
-            color={BLUE_GEOJSON_COLOR}
-          />
-        </fieldset>
-      )}
-      {["RED", "GOD"].includes(settings.perspective) && (
-        <fieldset
-          style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-        >
-          <legend>Red Overlays</legend>
-          <ChipList
-            chips={redGeoJsonChips}
-            shownKeys={shownRedIds}
-            onToggle={onToggleRed}
-            color={RED_GEOJSON_COLOR}
-          />
-        </fieldset>
-      )}
+      {/* Overlay panel: takes the remaining height and scrolls on its own. */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+        }}
+      >
+        {["BLUE", "GOD"].includes(settings.perspective) && (
+          <fieldset
+            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+          >
+            <legend>Blue Overlays</legend>
+            <ChipList
+              chips={blueGeoJsonChips}
+              shownKeys={shownBlueIds}
+              onToggle={onToggleBlue}
+              color={BLUE_GEOJSON_COLOR}
+            />
+          </fieldset>
+        )}
+        {["RED", "GOD"].includes(settings.perspective) && (
+          <fieldset
+            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+          >
+            <legend>Red Overlays</legend>
+            <ChipList
+              chips={redGeoJsonChips}
+              shownKeys={shownRedIds}
+              onToggle={onToggleRed}
+              color={RED_GEOJSON_COLOR}
+            />
+          </fieldset>
+        )}
+      </div>
     </div>
   );
 }

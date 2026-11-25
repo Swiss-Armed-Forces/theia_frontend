@@ -41,6 +41,10 @@
 .sidebar {
   width: 14vw;
   min-width: 220px;
+  /* Lets the overlay panel take the remaining height and scroll. */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .main {
