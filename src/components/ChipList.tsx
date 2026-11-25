@@ -2,19 +2,19 @@ export type Chip = { key: string; label: string };
 
 export default function ChipList({
   chips,
-  hiddenKeys,
+  shownKeys,
   onToggle,
   color,
 }: {
   chips: Chip[];
-  hiddenKeys: Set<string>;
+  shownKeys: Set<string>;
   onToggle: (key: string) => void;
   color: string;
 }) {
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
       {chips.map(({ key, label }) => {
-        const active = !hiddenKeys.has(key);
+        const active = shownKeys.has(key);
         return (
           <button
             key={key}

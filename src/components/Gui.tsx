@@ -18,10 +18,10 @@ import EventLog from "./EventLog";
 import { useSettings } from "../hooks/useSettings";
 
 function toggleKey(
-  setHidden: Dispatch<SetStateAction<Set<string>>>,
+  setKeys: Dispatch<SetStateAction<Set<string>>>,
   key: string,
 ) {
-  setHidden((prev) => {
+  setKeys((prev) => {
     const next = new Set(prev);
     if (next.has(key)) {
       next.delete(key);
@@ -32,6 +32,19 @@ function toggleKey(
   });
 }
 
+// Copy of `ids` with `keys` added (`add`) or removed.
+function withKeys(ids: Set<string>, keys: string[], add: boolean): Set<string> {
+  const next = new Set(ids);
+  for (const key of keys) {
+    if (add) {
+      next.add(key);
+    } else {
+      next.delete(key);
+    }
+  }
+  return next;
+}
+
 // The side panel toggles annotations by ID and labels them like the map.
 function toChip(annotation: GeoJSONAnnotation): Chip {
   return { key: annotation.id, label: annotation.hover_text ?? annotation.id };
@@ -40,10 +53,9 @@ function toChip(annotation: GeoJSONAnnotation): Chip {
 export default function Gui() {
   const { settings } = useSettings();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [hiddenBlueKeys, setHiddenBlueKeys] = useState<Set<string>>(
-    new Set(),
-  );
-  const [hiddenRedKeys, setHiddenRedKeys] = useState<Set<string>>(new Set());
+  // Annotations are hidden until the user shows them.
+  const [shownBlueIds, setShownBlueIds] = useState<Set<string>>(new Set());
+  const [shownRedIds, setShownRedIds] = useState<Set<string>>(new Set());
 
   const {
     time,
@@ -83,14 +95,30 @@ export default function Gui() {
       "id" in trajectory && !trajectory.info.is_airborne,
   );
 
+  // Clicking a unit toggles all its annotations: if all are shown, hide them;
+  // otherwise show them. Only annotations of visible sides are displayed.
+  const toggleTargetAnnotations = (targetId: number) => {
+    const idsOf = (annotations: GeoJSONAnnotation[]) =>
+      annotations
+        .filter((annotation) => annotation.target_ids.includes(targetId))
+        .map((annotation) => annotation.id);
+    const blueIds = idsOf(displayData.blueGeoJson);
+    const redIds = idsOf(displayData.redGeoJson);
+    const allShown =
+      blueIds.every((id) => shownBlueIds.has(id)) &&
+      redIds.every((id) => shownRedIds.has(id));
+    setShownBlueIds((prev) => withKeys(prev, blueIds, !allShown));
+    setShownRedIds((prev) => withKeys(prev, redIds, !allShown));
+  };
+
   const sidebarContent = (
     <SettingsForm
       blueGeoJsonChips={displayData.blueGeoJson.map(toChip)}
       redGeoJsonChips={displayData.redGeoJson.map(toChip)}
-      hiddenBlueKeys={hiddenBlueKeys}
-      hiddenRedKeys={hiddenRedKeys}
-      onToggleBlue={(key) => toggleKey(setHiddenBlueKeys, key)}
-      onToggleRed={(key) => toggleKey(setHiddenRedKeys, key)}
+      shownBlueIds={shownBlueIds}
+      shownRedIds={shownRedIds}
+      onToggleBlue={(key) => toggleKey(setShownBlueIds, key)}
+      onToggleRed={(key) => toggleKey(setShownRedIds, key)}
     />
   );
 
@@ -126,8 +154,8 @@ export default function Gui() {
             blueMonostaticRadars={blueMonostaticRadars}
             blueGeoJson={displayData.blueGeoJson}
             redGeoJson={displayData.redGeoJson}
-            hiddenBlueKeys={hiddenBlueKeys}
-            hiddenRedKeys={hiddenRedKeys}
+            shownBlueIds={shownBlueIds}
+            shownRedIds={shownRedIds}
             bluePclSensors={bluePclSensors}
             trajectories={trajectories}
             team={team}
@@ -135,6 +163,7 @@ export default function Gui() {
             transportTimes={gameData.transportTimes}
             attackTargets={attackTargets}
             onActionFailed={(msg) => addLocalEntry(team, msg)}
+            onTargetClick={toggleTargetAnnotations}
           />
           <EventLog
             entries={eventLogEntries}

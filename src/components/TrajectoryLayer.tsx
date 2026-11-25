@@ -13,14 +13,18 @@ function TargetMarker({
   tooltip,
   position,
   sidc,
+  onClick,
 }: {
   map: L.Map | null;
   tooltip: ReactElement;
   position: Point;
   sidc: string;
+  onClick?: () => void;
 }) {
   const markerRef = useRef<L.Marker | null>(null);
   const sidcRef = useRef<string | null>(null);
+  // The marker is created once; it calls the latest handler via this ref.
+  const onClickRef = useRef(onClick);
 
   // Effect A: create the marker once per map instance.
   useEffect(() => {
@@ -30,6 +34,7 @@ function TargetMarker({
     // Bind the tooltip once; Effect B only updates its content in place.
     // Re-binding on every poll tick would close an open (hovered) tooltip.
     marker.bindTooltip("", TOOLTIP_OPTS);
+    marker.on("click", () => onClickRef.current?.());
     marker.addTo(map);
     markerRef.current = marker;
     sidcRef.current = sidc;
@@ -43,6 +48,7 @@ function TargetMarker({
   // Effect B: push the latest data onto the existing marker every render,
   // without removing/re-adding it, to avoid flicker on each poll tick.
   useEffect(() => {
+    onClickRef.current = onClick;
     const marker = markerRef.current;
     if (!marker) return;
     marker.setLatLng([position.lat, position.lon]);
@@ -60,9 +66,12 @@ function TargetMarker({
 export default function TrajectoryLayer({
   map,
   trajectory,
+  onClick,
 }: {
   map: L.Map | null;
   trajectory: GroundTruth | Track;
+  /** Called when the target's icon is clicked */
+  onClick?: () => void;
 }) {
   const currentPoint = trajectory.points[0];
   const id = "target_id" in trajectory ? trajectory.target_id : trajectory.id;
@@ -129,6 +138,7 @@ export default function TrajectoryLayer({
       position={currentPoint}
       sidc={trajectory.sidc}
       tooltip={tooltip}
+      onClick={onClick}
     />
   );
 }

@@ -25,14 +25,15 @@ export default function RadarMap({
   bluePclSensors,
   blueGeoJson,
   redGeoJson,
-  hiddenBlueKeys,
-  hiddenRedKeys,
+  shownBlueIds,
+  shownRedIds,
   trajectories: allTrajectories,
   team,
   campSites,
   transportTimes,
   attackTargets,
   onActionFailed,
+  onTargetClick,
   resizeTrigger,
 }: {
   time: Date;
@@ -40,8 +41,8 @@ export default function RadarMap({
   bluePclSensors: Sensor[];
   blueGeoJson: GeoJSONAnnotation[];
   redGeoJson: GeoJSONAnnotation[];
-  hiddenBlueKeys: Set<string>;
-  hiddenRedKeys: Set<string>;
+  shownBlueIds: Set<string>;
+  shownRedIds: Set<string>;
   trajectories: (GroundTruth | Track)[];
   /** Visible side; `null` in the GOD perspective */
   team: Team | null;
@@ -53,6 +54,8 @@ export default function RadarMap({
   attackTargets: Track[];
   /** Called with a message if an action could not be sent */
   onActionFailed: (msg: string) => void;
+  /** Called when the icon of a target with annotations is clicked */
+  onTargetClick: (targetId: number) => void;
   resizeTrigger?: boolean;
 }) {
   const { settings } = useSettings();
@@ -140,6 +143,12 @@ export default function RadarMap({
   const pclSensorMarkers = bluePclSensors.map((sensor, i) => (
     <PclSensorMarkers key={i} map={map} sensor={sensor} />
   ));
+  // Only ground truth (i. e. friendly units) is tied to annotations.
+  const annotatedTargetIds = new Set(
+    [...blueGeoJson, ...redGeoJson].flatMap(
+      (annotation) => annotation.target_ids,
+    ),
+  );
   const groundTruthLayers = visibleTrajectories.map((trajectory) => (
     <TrajectoryLayer
       key={
@@ -149,6 +158,12 @@ export default function RadarMap({
       }
       map={map}
       trajectory={trajectory}
+      onClick={
+        "target_id" in trajectory &&
+        annotatedTargetIds.has(trajectory.target_id)
+          ? () => onTargetClick(trajectory.target_id)
+          : undefined
+      }
     />
   ));
 
@@ -157,11 +172,11 @@ export default function RadarMap({
 
   const geoJsonLayers = (
     annotations: GeoJSONAnnotation[],
-    hiddenIds: Set<string>,
+    shownIds: Set<string>,
     style: L.PathOptions,
   ) =>
     annotations
-      .filter((annotation) => !hiddenIds.has(annotation.id))
+      .filter((annotation) => shownIds.has(annotation.id))
       .map((annotation) => (
         <GeoJsonLayer
           key={annotation.id}
@@ -173,12 +188,12 @@ export default function RadarMap({
       ));
   const blueGeoJsonLayers = geoJsonLayers(
     blueGeoJson,
-    hiddenBlueKeys,
+    shownBlueIds,
     blueGeoJsonStyle,
   );
   const redGeoJsonLayers = geoJsonLayers(
     redGeoJson,
-    hiddenRedKeys,
+    shownRedIds,
     redGeoJsonStyle,
   );
 

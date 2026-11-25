@@ -20,15 +20,15 @@ function isPerspective(value: unknown): value is Perspective {
 export default function SettingsForm({
   blueGeoJsonChips,
   redGeoJsonChips,
-  hiddenBlueKeys,
-  hiddenRedKeys,
+  shownBlueIds,
+  shownRedIds,
   onToggleBlue,
   onToggleRed,
 }: {
   blueGeoJsonChips: Chip[];
   redGeoJsonChips: Chip[];
-  hiddenBlueKeys: Set<string>;
-  hiddenRedKeys: Set<string>;
+  shownBlueIds: Set<string>;
+  shownRedIds: Set<string>;
   onToggleBlue: (key: string) => void;
   onToggleRed: (key: string) => void;
 }) {
@@ -100,7 +100,7 @@ export default function SettingsForm({
           <legend>Blue Overlays</legend>
           <ChipList
             chips={blueGeoJsonChips}
-            hiddenKeys={hiddenBlueKeys}
+            shownKeys={shownBlueIds}
             onToggle={onToggleBlue}
             color={BLUE_GEOJSON_COLOR}
           />
@@ -113,7 +113,7 @@ export default function SettingsForm({
           <legend>Red Overlays</legend>
           <ChipList
             chips={redGeoJsonChips}
-            hiddenKeys={hiddenRedKeys}
+            shownKeys={shownRedIds}
             onToggle={onToggleRed}
             color={RED_GEOJSON_COLOR}
           />
