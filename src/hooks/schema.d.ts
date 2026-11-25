@@ -678,6 +678,24 @@ export interface components {
             receiver?: components["schemas"]["Receiver-Output"] | null;
             transmitter?: components["schemas"]["Transmitter-Output"] | null;
         };
+        /**
+         * GeoJSONAnnotation
+         * @description A GeoJSON feature with the meta-information needed to display it.
+         */
+        GeoJSONAnnotation: {
+            /** Id */
+            id: string;
+            feature: components["schemas"]["GeoJSONFeature"];
+            /** @default OTHER */
+            kind: components["schemas"]["GeoJSONKind"];
+            /**
+             * Target Ids
+             * @default []
+             */
+            target_ids: number[];
+            /** Hover Text */
+            hover_text?: string | null;
+        };
         /** GeoJSONFeature */
         GeoJSONFeature: {
             /**
@@ -696,6 +714,12 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /**
+         * GeoJSONKind
+         * @description What a `GeoJSONAnnotation` depicts.
+         * @enum {string}
+         */
+        GeoJSONKind: "SENSOR_RANGE" | "EFFECTOR_RANGE" | "OTHER";
         /** GeoJSONMultiPolygon */
         GeoJSONMultiPolygon: {
             /**
@@ -1248,7 +1272,13 @@ export interface components {
             /** V Up */
             v_up: number;
         };
-        /** Trajectory */
+        /**
+         * Trajectory
+         * @description Path of a target, interpolated with a cubic spline in geodetic coordinates.
+         *
+         *     The velocity is not stored: `__call__` derives it from the time derivative
+         *     of the position spline, so it is always consistent with the positions.
+         */
         Trajectory: {
             /** Target Id */
             target_id: number;
@@ -1261,12 +1291,6 @@ export interface components {
             lons: number[];
             /** Alts */
             alts: number[];
-            /** Vxs */
-            vxs: number[];
-            /** Vys */
-            vys: number[];
-            /** Vzs */
-            vzs: number[];
             cross_section_model: components["schemas"]["ConstantRcsModel"];
         };
         /** Transmitter */
@@ -1364,7 +1388,10 @@ export interface components {
             /** Error Type */
             type: string;
         };
-        /** Velocity */
+        /**
+         * Velocity
+         * @description Velocity in Earth-centred, Earth-fixed (ECEF, WGS84) coordinates.
+         */
         Velocity: {
             /** Vx */
             vx: number;
@@ -1965,9 +1992,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: components["schemas"]["GeoJSONFeature"];
-                    };
+                    "application/json": components["schemas"]["GeoJSONAnnotation"][];
                 };
             };
             /** @description Validation Error */
