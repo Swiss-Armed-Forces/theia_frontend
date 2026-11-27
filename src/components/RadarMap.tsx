@@ -129,7 +129,7 @@ export default function RadarMap({
 
   const [visibleAltRange, setVisibleAltRange] = useState<[number, number]>([
     settings.minHeight,
-    settings.maxHeight,
+    Infinity,
   ]);
 
   const visibleTrajectories = trajectories.filter((trajectory) => {
