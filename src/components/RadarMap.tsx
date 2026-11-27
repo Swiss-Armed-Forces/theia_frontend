@@ -2,6 +2,7 @@ import L from "leaflet";
 import type {
   GeoJSONAnnotation,
   GroundTruth,
+  Point,
   Team,
   Track,
 } from "../hooks/useRadarData";
@@ -16,6 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import TrajectoryLayer from "./TrajectoryLayer";
 import PlayerActionsLayer, { type ActionMode } from "./PlayerActionsLayer";
 import ClickPopup from "./ClickPopup";
+import DistanceMeasurementLayer from "./DistanceMeasurementLayer";
 import GeoJsonLayer from "./GeoJsonLayer";
 import { extractState } from "../util/utils";
 import IntervalSelector from "./IntervalSelector";
@@ -113,6 +115,9 @@ export default function RadarMap({
     campSites.some((site) => site.id === actionMode.siteId && site.is_alive)
       ? actionMode
       : null;
+
+  // Points of the distance measurement; empty when inactive.
+  const [distancePoints, setDistancePoints] = useState<Point[]>([]);
 
   // Camp sites are drawn by their own markers: drop their ground truth.
   const campSiteTargetIds = new Set(campSites.map((site) => site.target_id));
@@ -262,7 +267,17 @@ export default function RadarMap({
           onActionModeChange={setActionMode}
         />
       )}
-      <ClickPopup map={map} enabled={activeActionMode === null} />
+      <DistanceMeasurementLayer
+        map={map}
+        points={distancePoints}
+        onPointsChange={setDistancePoints}
+        enabled={activeActionMode === null}
+      />
+      {/* A plain click while measuring only removes the measurement. */}
+      <ClickPopup
+        map={map}
+        enabled={activeActionMode === null && distancePoints.length === 0}
+      />
       <div
         style={{
           position: "absolute",

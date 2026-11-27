@@ -2,7 +2,8 @@ import L from "leaflet";
 import { useEffect } from "react";
 
 /**
- * Popup with the coordinates of a click on the map.
+ * Popup with the coordinates of a click on the map. Shift+clicks are left to
+ * the distance measurement.
  *
  * @param enabled whether map clicks open the popup; off while the player picks
  *   an action's target
@@ -21,6 +22,7 @@ export default function ClickPopup({
     const popup = L.popup();
 
     function handleClick(e: L.LeafletMouseEvent) {
+      if (e.originalEvent.shiftKey) return;
       popup
         .setLatLng(e.latlng)
         .setContent(
